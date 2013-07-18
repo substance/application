@@ -12,44 +12,28 @@ var util = Substance.util;
 
 var Controller = function(options) {
 
-  // Either use the provided element or make up a new element
-  this.$el = $('<div/>');
-  this.el = this.$el[0];
-
-  this._handlers = [];
 };
+
+Controller.Prototype = function() {
+
+  // Finalize state transition
+  // -----------------
+  //
+  // Editor View listens on state-changed events:
+  //
+  // E.g. this.listenTo(this, 'state-changed:comments', this.toggleComments);
+
+  this.updateState = function(state) {
+    var oldState = this.state;
+    this.state = state;
+    this.trigger('state-changed', this.state, oldState);
+  };
+};
+
 
 // Setup prototype chain
-Controller.prototype = util.Events;
-
-
-
-// Handle a particular event
-// ----------
-//
-
-Controller.prototype.handle = function(target, eventName, handler) {
-  // Register binding for later disposal
-  console.log('handling', eventName);
-  target.on(eventName, handler, this);
-  this._handlers.push([target, eventName, handler]);
-};
-
-
-// Unbind event handlers
-// ----------
-//
-
-Controller.prototype.disposeHandlers = function() {
-  _.each(this._handlers, function(h) {
-    var target = h[0];
-    var eventName= h[1];
-    var handler = h[2];
-    console.log('unbinding ', eventName);
-    target.unbind(eventName, handler);
-  });
-};
-
+Controller.Prototype.prototype = util.Events;
+Controller.prototype = new Controller.Prototype();
 
 Substance.Application.Controller = Controller;
 
