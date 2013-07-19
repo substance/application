@@ -1,9 +1,6 @@
-(function(root) { "use strict";
+"use strict";
 
-var Substance = root.Substance;
-var _ = root._;
-var util = Substance.util;
-
+var util = require("substance-util");
 
 // Substance.View
 // ==========================================================================
@@ -72,7 +69,4 @@ View.Prototype = function() {
 View.Prototype.prototype = util.Events;
 View.prototype = new View.Prototype();
 
-
-Substance.Application.View = View;
-
-})(this);
+module.exports = View;
