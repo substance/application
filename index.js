@@ -1,7 +1,7 @@
 "use strict";
 
-module.exports = {
-  Application: require("./src/application"),
-  View: require("./src/view"),
-  Controller: require("./src/controller"),
-};
+var Application = require("./src/application");
+Application.View = require("./src/view");
+Application.Controller = require("./src/controller");
+
+module.exports = Application;
