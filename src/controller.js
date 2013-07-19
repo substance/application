@@ -23,10 +23,10 @@ Controller.Prototype = function() {
   //
   // E.g. this.listenTo(this, 'state-changed:comments', this.toggleComments);
 
-  this.updateState = function(state) {
+  this.updateState = function(state, data) {
     var oldState = this.state;
     this.state = state;
-    this.trigger('state-changed', this.state, oldState);
+    this.trigger('state-changed', this.state, oldState, data);
   };
 };
 
