@@ -1,8 +1,6 @@
-(function(root) { "use strict";
+"use strict";
 
-var Substance = root.Substance;
-var _ = root._;
-var util = Substance.util;
+var util = require("substance-util");
 
 
 // Substance.Application.Controller
@@ -35,6 +33,4 @@ Controller.Prototype = function() {
 Controller.Prototype.prototype = util.Events;
 Controller.prototype = new Controller.Prototype();
 
-Substance.Application.Controller = Controller;
-
-})(this);
+module.exports = Controller;
