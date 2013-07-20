@@ -9,7 +9,7 @@ var util = require("substance-util");
 // Application Controller abstraction suggesting strict MVC
 
 var Controller = function(options) {
-
+  this.state = null;
 };
 
 Controller.Prototype = function() {
