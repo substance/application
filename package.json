@@ -10,7 +10,7 @@
     "url": "https://github.com/substance/application.git"
   },
   "main": "index",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha",
   "dependencies": {
     "underscore": "1.5.x"
   },
