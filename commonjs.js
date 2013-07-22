@@ -31,7 +31,7 @@
       }
       var dirname = file.slice(0, file.lastIndexOf('/') + 1);
       require.cache[file] = module$.exports;
-      resolved.call(global, module$.exports, module$, module$.exports, dirname, file);
+      resolved.call(global, global, module$, module$.exports, dirname, file);
       module$.loaded = true;
       require.cache[file] = module$.exports;
 
