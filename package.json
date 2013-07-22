@@ -12,9 +12,7 @@
   "main": "index",
   "version": "0.1.0-alpha",
   "dependencies": {
-    "underscore": "1.5.x"
-  },
-  "devDependencies": {
+    "underscore": "1.5.x",
     "esprima": "1.0.x",
     "escodegen": "0.0.x",
     "estraverse": "0.0.x",
