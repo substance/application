@@ -9,8 +9,6 @@ var require = function(file, parentModule) {
     return require.cache[file];
   }
 
-  console.log("requiring " + file);
-
   var resolved;
   try {
     resolved = require.resolve(file);
