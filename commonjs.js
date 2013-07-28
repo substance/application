@@ -3,58 +3,12 @@
   var esprima = require('esprima');
   var estraverse = require('estraverse');
   var escodegen = require('escodegen');
+  var fs = require("fs");
+  var relativeResolve = require("./lib/cjsify/relative-resolve");
 
   // In the near future we might get rid of the dependency to commonjs-everywhere.
   // For now we keep the parts we need as a copy in this repository.
   var traverseDependencies = require('./lib/cjsify/traverse-dependencies');
-
-  var REQUIRE = function(global) {
-    var require = function(file, parentModule) {
-      if({}.hasOwnProperty.call(require.cache, file)) {
-        return require.cache[file];
-      }
-      var resolved;
-      try {
-        resolved = require.resolve(file);
-      } catch (err) {
-        delete require.cache[file];
-        throw new Error('Error: ' + err.stack);
-      }
-
-      if(!resolved) {
-        delete require.cache[file];
-        throw new Error('Failed to resolve module ' + file);
-      }
-      var module$ = {
-        id: file,
-        require: require,
-        filename: file,
-        exports: {},
-        loaded: false,
-        parent: parentModule,
-        children: []
-      };
-      if(parentModule) {
-        parentModule.children.push(module$);
-      }
-      var dirname = file.slice(0, file.lastIndexOf('/') + 1);
-      require.cache[file] = module$.exports;
-      resolved.call(global, global, module$, module$.exports, dirname, file);
-      module$.loaded = true;
-      require.cache[file] = module$.exports;
-
-      return module$.exports;
-    };
-    require.modules = {};
-    require.cache = {};
-    require.resolve = function(file){
-      return {}.hasOwnProperty.call(require.modules, file) ? require.modules[file] : void 0;
-    };
-    require.define = function(file, fn){
-      require.modules[file] = fn;
-    };
-    global.require = require;
-  };
 
   var MODULE = function(id, body) {
     return ["require.define('", id,"', function(global, module, exports, __dirname, __filename){", body, "});"].join("");
@@ -67,6 +21,7 @@
     this.cache = {};
     this.sources = {};
     this.map = {};
+    this.aliases = {};
   };
 
   CommonJSServer.__prototype__ = function() {
@@ -164,11 +119,21 @@
         cache: this.cache
       });
 
-      for (var path in entries) {
-        var entry = entries[path];
-        _updateEntry(this, path, entry);
+      for (var p in entries) {
+        var entry = entries[p];
+        _updateEntry(this, p, entry);
       }
+    };
 
+    this.boot = function(bootSpec) {
+
+      var relPath = relativeResolve({
+        root: this.root,
+        path: bootSpec.source
+      });
+
+      this.aliases[bootSpec.alias] = relPath.canonicalName;
+      this.update(bootSpec.source);
     };
 
     this.list = function() {
@@ -179,12 +144,12 @@
 
     this.getScript = function(resource) {
       if (resource === "/require.js") {
-        return "("+REQUIRE.toString()+").call(this,this);";
+        var template = fs.readFileSync(__dirname + "/lib/cjsify/require.template", "utf8");
+        template = template.replace("###ALIASES###", JSON.stringify(this.aliases));
+        return template;
       } else {
-        if (this.map[resource] === undefined) {
-          throw new Error("Unknown resource: " + resource);
-        }
-        var path = this.map[resource];
+        console.log("serving resource", resource);
+        var path = this.map[resource] || resource;
         this.update(path);
         return this.sources[path];
       }
