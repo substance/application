@@ -156,10 +156,6 @@
       self.sources[path] = code;
       self.map[id] = path;
 
-      if (path.search(".json") > 0) {
-        console.log("Updating: ", path, id, code);
-      }
-
     }
 
     this.update = function(path) {
