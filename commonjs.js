@@ -13,8 +13,16 @@
       if({}.hasOwnProperty.call(require.cache, file)) {
         return require.cache[file];
       }
-      var resolved = require.resolve(file);
+      var resolved;
+      try {
+        resolved = require.resolve(file);
+      } catch (err) {
+        delete require.cache[file];
+        throw new Error('Error: ' + err.stack);
+      }
+
       if(!resolved) {
+        delete require.cache[file];
         throw new Error('Failed to resolve module ' + file);
       }
       var module$ = {
@@ -91,7 +99,7 @@
           tail
         ].join("");
 
-        console.log("line:", oldLine, " -> ", newline);
+        //console.log("line:", oldLine, " -> ", newline);
         lines[lineNumber] = newline;
       }
 
@@ -117,22 +125,26 @@
 
     function _updateEntry(self, path, entry) {
 
-      var nodes = [];
-      estraverse.traverse(entry.ast, {
-        enter: function(node) {
-          if (node.type === 'CallExpression' && node.callee.name === 'require') {
-            nodes.push(node);
-          }
-          return true;
-        }
-      });
-
-      var body;
       var id = entry.canonicalName;
-      if (nodes.length === 0) {
-        body = entry.fileContents;
+      var body;
+
+      if (path.search(".json") > 0) {
+        body = "module.exports = " + entry.fileContents + ";";
       } else {
-        body = _prepareSource(entry.fileContents, nodes);
+        var nodes = [];
+        estraverse.traverse(entry.ast, {
+          enter: function(node) {
+            if (node.type === 'CallExpression' && node.callee.name === 'require') {
+              nodes.push(node);
+            }
+            return true;
+          }
+        });
+        if (nodes.length === 0) {
+          body = entry.fileContents;
+        } else {
+          body = _prepareSource(entry.fileContents, nodes);
+        }
       }
 
       var code = MODULE(id, body);
@@ -140,14 +152,19 @@
         code = _minify(code);
       }
 
-      console.log("Updating: ", path, id);
+      // console.log("Updating: ", path, id);
       self.sources[path] = code;
       self.map[id] = path;
+
+      if (path.search(".json") > 0) {
+        console.log("Updating: ", path, id, code);
+      }
+
     }
 
-    this.update = function(entryPoint) {
+    this.update = function(path) {
 
-      var entries = traverseDependencies(entryPoint, this.root, {
+      var entries = traverseDependencies(path, this.root, {
         cache: this.cache
       });
 
