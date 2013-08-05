@@ -1,16 +1,19 @@
 {
-  "name"          : "substance-application",
-  "description"   : "Substance apps using Views, Controllers and Modules.",
-  "url"           : "http://github.com/substance/application/",
-  "keywords"      : ["substance", "versioning"],
-  "author"        : "Michael Aufreiter",
-  "contributors"  : ["Oliver Buchtala"],
+  "name": "substance-application",
+  "description": "Substance apps using Views, Controllers and Modules.",
+  "url": "http://github.com/substance/application/",
+  "keywords": [
+    "substance",
+    "versioning"
+  ],
+  "author": "Michael Aufreiter",
+  "contributors": [
+    "Oliver Buchtala"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/substance/application.git"
   },
-  "main": "index",
-  "version": "0.1.0-alpha",
   "dependencies": {
     "underscore": "1.5.x",
     "esprima": "1.0.x",
@@ -19,7 +22,9 @@
     "MD5": "1.0.x",
     "resolve": "0.3.x"
   },
+  "version": "0.1.1",
   "engines": {
-    "node": ">=0.8.x"
+    "node": ">=0.8.x",
+    "npm": ">=1.1.x"
   }
 }
