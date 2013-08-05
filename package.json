@@ -22,7 +22,7 @@
     "MD5": "1.0.x",
     "resolve": "0.3.x"
   },
-  "version": "0.1.1",
+  "version": "0.1.0",
   "engines": {
     "node": ">=0.8.x",
     "npm": ">=1.1.x"
