@@ -1,5 +1,6 @@
 "use strict";
 
+var View = require("./view");
 var util = require("substance-util");
 
 // Substance.Application
@@ -7,10 +8,13 @@ var util = require("substance-util");
 //
 // Application abstraction suggesting strict MVC
 
-var Application = function(options) {
-  // Either use the provided element or make up a new element
-  this.$el = $('<div/>');
-  this.el = this.$el[0];
+var Application = function(config) {
+  View.call(this);
+
+  this.config = config;
+
+
+
 };
 
 Application.Prototype = function() {
@@ -20,14 +24,17 @@ Application.Prototype = function() {
   //
 
   this.start = function() {
-    console.log('Substance is listening at ...');
+
+    this.$el = $('body');
+    this.el = this.$el[0];
+
   };
 
 };
 
 // Setup prototype chain
 
-Application.Prototype.prototype = util.Events;
+Application.Prototype.prototype = View.prototype;
 Application.prototype = new Application.Prototype();
 
 module.exports = Application;

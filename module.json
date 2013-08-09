@@ -1,6 +1,6 @@
 {
   "name":"substance-application",
-  "description":"Substance apps using Views, Controllers and Modules.",
+  "description":"Create Substance apps using Views, Controllers and Modules.",
   "url":"http://github.com/substance/application/",
   "keywords":[
     "substance",
