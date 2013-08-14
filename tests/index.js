@@ -3,4 +3,4 @@
 // Application Tests
 // ---------------
 
-require("./renderer_test");
+require("./element_renderer_test");

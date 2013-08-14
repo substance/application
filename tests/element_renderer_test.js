@@ -12,7 +12,7 @@ var ElementRenderer = require("../src/renderers/element_renderer");
 // Test
 // ========
 
-var ImporterTest = function () {
+var ElementRendererTest = function () {
 
   this.setup = function() {
     // this.importer = new Importer();

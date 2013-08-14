@@ -13,7 +13,7 @@ var ElementRenderer = function(elementSpec) {
   this.render();
 };
 
-Renderer.Prototype = function() {
+ElementRenderer.Prototype = function() {
 
   this.render = function() {
 
@@ -23,7 +23,7 @@ Renderer.Prototype = function() {
 
 
 // Setup prototype chain
-Renderer.Prototype.prototype = util.Events;
-Renderer.prototype = new Renderer.Prototype();
+ElementRenderer.Prototype.prototype = util.Events;
+ElementRenderer.prototype = new ElementRenderer.Prototype();
 
 module.exports = ElementRenderer;
