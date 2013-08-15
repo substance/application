@@ -1,6 +1,7 @@
 "use strict";
 
 var util = require("substance-util");
+var SRegExp = require("substance-regexp");
 
 // Substance.Application.ElementRenderer
 // ==========================================================================
@@ -8,17 +9,19 @@ var util = require("substance-util");
 // This is just a simple helper that allows us to create DOM elements
 // in a data-driven way
 
-var ElementRenderer = function(elementSpec) {
-  this.elementSpec = elementSpec;
+var ElementRenderer = function(attributes) {
+  this.attributes = attributes;
 
-  // Pull out preserved properties
+  // Pull off preserved properties from attributes
   // --------
 
-  this.tagName = elementSpec.tag;  
-  this.children = elementSpec.children || [];
-  this.text = elementSpec.text || "";
-  delete elementSpec.children;
-  delete elementSpec.text;
+  this.tagName = attributes.tag;  
+  this.children = attributes.children || [];
+  this.text = attributes.text || "";
+  
+  delete attributes.children;
+  delete attributes.text;
+  delete attributes.tag;
 
   return this.render();
 };
@@ -41,8 +44,8 @@ ElementRenderer.Prototype = function() {
     el.textContent = this.text;
 
     // Set attributes based on element spec
-    for(var attrName in this.elementSpec) {
-      var val = this.elementSpec[attrName];
+    for(var attrName in this.attributes) {
+      var val = this.attributes[attrName];
       el.setAttribute(attrName, val);
     }
 
@@ -57,9 +60,36 @@ ElementRenderer.Prototype = function() {
     this.el = el;
     return el;
   };
-
 };
 
+
+
+// Provides a shortcut syntax interface to ElementRenderer
+// --------
+
+var $$ = function(descriptor, options) {
+  var options = options  || {};
+
+  // Extract tagName, defaults to 'div'
+  var tagName = /^([a-zA-Z0-9]*)/.exec(descriptor);
+  options.tag = tagName && tagName[1] ? tagName[1] : 'div';
+
+  // Any occurence of #some_chars
+  var id = /#([a-zA-Z0-9_]*)/.exec(descriptor);
+  if (id && id[1]) options.id = id[1];
+
+  // Any occurence of .some-chars
+  var matchClasses = new SRegExp(/\.([a-zA-Z0-9_-]*)/g);
+  options.class = matchClasses.match(descriptor).map(function(m) {
+    return m.match[1];
+  }).join(' ');
+  
+  return new ElementRenderer(options);
+};
+
+
+
+ElementRenderer.$$ = $$;
 
 // Setup prototype chain
 ElementRenderer.Prototype.prototype = util.Events;

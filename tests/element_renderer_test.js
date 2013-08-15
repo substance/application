@@ -8,6 +8,8 @@ var assert = Test.assert;
 var registerTest = Test.registerTest;
 
 var ElementRenderer = require("../src/renderers/element_renderer");
+var $$ = ElementRenderer.$$;
+
 
 // Test
 // ========
@@ -59,26 +61,65 @@ var ElementRendererTest = function () {
         ]
       });
 
-      console.log('LE LIST', nestedList);
+      var itemOne = nestedList.querySelectorAll('li.item-1');
+      assert.isEqual(1, itemOne.length);
 
+      var items = nestedList.querySelectorAll('li');
+      assert.isEqual(4, items.length);
     },
 
-    // "Test shortcut version", function() {
-    //   // Shortcut version
-    //   $$('#john.foo');
-    // },
+    "Test shortcut version", function() {
+      // Shortcut version
+      var el = $$('div#bar.foo');
+    },
+
+    "Test depely nested composition with short syntax", function() {
+
+      // <ul id="my_list">
+      //   <li>A</li>
+      //   <li>B
+      //     <ul>
+      //       <li>B1</li>
+      //       <li>B2</li>
+      //     </ul>
+      //   </li>
+      //   <li>B</li>
+      // </ul>
+
+      var nestedList = $$('ul#my_list', {
+        children: [
+          $$('li.foo', {"text": "A"}),
+          $$('li.foo', {
+            "text": "B",
+            "children": [
+              $$('li.item-1', {text: "B1"}),
+              $$('li', {text: "B2"})
+            ]
+          })
+        ]
+      });
+
+      var fooItems = nestedList.querySelectorAll('li.foo');
+      assert.isEqual(2, fooItems.length);
+
+      var items = nestedList.querySelectorAll('li');
+      assert.isEqual(4, items.length);
+    },
+
+    "Render some images", function() {
+      var images = $$('#images', {
+        children: [
+          $$('img#img_1.cat-1', {"src": "http://foo.com/bar.jpg"}),
+          $$('img#img_2.cat-1', {"src": "http://bar.at/foo.png"}),
+          // alternatively
+          // document.createElement('div')
+        ]
+      });
+
+      console.log('IMAGES', images);
 
 
-    // "Render a nested composition of DOM Elements", function() {
-    //   var images = $$('#images', {
-    //     children: [
-    //       $$('img#img_1.cat-1', {"src": "http://foo.com/bar.jpg"}),
-    //       $$('img#img_2.cat-1', {"src": "http://bar.at/foo.png"}),
-    //       // alternatively
-    //       document.createElement('div')
-    //     ]
-    //   });
-    // },
+    },
 
     // "Render a deeply nested composition of things", function() {
     //   // 3. Deeper nested
@@ -97,17 +138,7 @@ var ElementRendererTest = function () {
     //     ]
     //   });
 
-    //   // =>
-    //   // <ul id="my_list">
-    //   //   <li>A</li>
-    //   //   <li>B
-    //   //     <ul>
-    //   //       <li>B1</li>
-    //   //       <li>B2</li>
-    //   //     </ul>
-    //   //   </li>
-    //   //   <li>B</li>
-    //   // </ul>
+
     // },
 
     // "Manipulation of an existing renderer instance", function() {
