@@ -80,9 +80,12 @@ var $$ = function(descriptor, options) {
 
   // Any occurence of .some-chars
   var matchClasses = new SRegExp(/\.([a-zA-Z0-9_-]*)/g);
-  options.class = matchClasses.match(descriptor).map(function(m) {
-    return m.match[1];
-  }).join(' ');
+  // options.class = options.class ? options.class+' ' : '';
+  if (!options.class) {
+    options.class = matchClasses.match(descriptor).map(function(m) {
+      return m.match[1];
+    }).join(' ');
+  }
   
   return new ElementRenderer(options);
 };
