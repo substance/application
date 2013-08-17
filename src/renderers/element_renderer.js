@@ -18,9 +18,11 @@ var ElementRenderer = function(attributes) {
   this.tagName = attributes.tag;  
   this.children = attributes.children || [];
   this.text = attributes.text || "";
+  this.html = attributes.html;
   
   delete attributes.children;
   delete attributes.text;
+  delete attributes.html;
   delete attributes.tag;
 
   return this.render();
@@ -41,7 +43,11 @@ ElementRenderer.Prototype = function() {
 
   this.render = function() {
     var el = document.createElement(this.tagName);
-    el.textContent = this.text;
+    if (this.html) {
+      el.innerHTML = this.html;
+    } else {
+      el.textContent = this.text;  
+    }
 
     // Set attributes based on element spec
     for(var attrName in this.attributes) {
