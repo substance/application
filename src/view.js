@@ -49,7 +49,7 @@ View.Prototype = function() {
       };
     }
 
-    this.$el.delegate('a[sbs-click]', 'click', function(e) {
+    this.$el.delegate('[sbs-click]', 'click', function(e) {
       
       // Matches things like this
       // showReport(foo) => ["showReport(foo)", "showReport", "foo"]
