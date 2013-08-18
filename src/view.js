@@ -55,12 +55,13 @@ View.Prototype = function() {
       // showReport(foo) => ["showReport(foo)", "showReport", "foo"]
       // showReport(12) => ["showReport(12)", "showReport", "12"]
       var fnCall = extractFunctionCall($(e.currentTarget).attr('sbs-click'));
-        
       
-      // Call it
-      that[fnCall.method].apply(that, fnCall.args);
-
-      return false;
+      // Event bubbles up if there is no handler
+      var method = that[fnCall.method];
+      if (method) { 
+        method.apply(that, fnCall.args);
+        return false;
+      }      
     });
   };
 };
