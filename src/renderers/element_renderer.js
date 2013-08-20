@@ -31,13 +31,6 @@ var ElementRenderer = function(attributes) {
 
 ElementRenderer.Prototype = function() {
 
-  // After construction find elements based on a DOM Selector
-  // --------
-
-  this.find = function(selector) {
-    return this.el.querySelectorAll(selector);
-  };
-
   // Do the actual rendering
   // --------
 

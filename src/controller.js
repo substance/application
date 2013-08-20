@@ -1,7 +1,7 @@
 "use strict";
 
 var util = require("substance-util");
-
+var _ = require("underscore");
 
 // Substance.Application.Controller
 // ==========================================================================
@@ -20,9 +20,9 @@ Controller.Prototype = function() {
   //
   // Editor View listens on state-changed events:
   //
-  // E.g. this.listenTo(this, 'state-changed:comments', this.toggleComments);
   // Maybe this should updateContext, so it can't be confused with the app state
   // which might be more than just the current context
+  // 
 
   this.updateState = function(context, state) {
     var oldContext = this.context;
@@ -37,7 +37,7 @@ Controller.Prototype = function() {
 
   this.modifyState = function(state) {
     _.extend(this.state, state);
-    this.trigger('state-changed', this.state.context)
+    this.trigger('state-changed', this.state.context);
   };
 };
 
