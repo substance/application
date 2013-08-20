@@ -1,6 +1,6 @@
 {
   "name": "substance-application",
-  "description": "Substance apps using Views, Controllers and Modules.",
+  "description": "Create Substance apps using Views, Controllers and Modules.",
   "url": "http://github.com/substance/application/",
   "keywords": [
     "substance",
@@ -20,7 +20,8 @@
     "escodegen": "0.0.x",
     "estraverse": "0.0.x",
     "MD5": "1.0.x",
-    "resolve": "0.3.x"
+    "resolve": "0.3.x",
+    "substance-regexp": "git+https://github.com/substance/regexp.git#0.1.x"
   },
   "version": "0.1.1",
   "engines": {
