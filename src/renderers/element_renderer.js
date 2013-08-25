@@ -77,6 +77,18 @@ var $$ = function(descriptor, options) {
   var id = /#([a-zA-Z0-9_]*)/.exec(descriptor);
   if (id && id[1]) options.id = id[1];
 
+
+  // Any occurence of .some-chars
+  // if (!options.class) {
+  //   var re = new RegExp(/\.([a-zA-Z0-9_-]*)/g);
+  //   var classes = [];
+  //   var classMatch;
+  //   while (classMatch = re.exec(descriptor)) {
+  //     classes.push(classMatch[1]);
+  //   }
+  //   options.class = classes.join(' ');
+  // }
+
   // Any occurence of .some-chars
   var matchClasses = new SRegExp(/\.([a-zA-Z0-9_-]*)/g);
   // options.class = options.class ? options.class+' ' : '';
