@@ -24,7 +24,7 @@
     this.aliases = {};
   };
 
-  CommonJSServer.__prototype__ = function() {
+  CommonJSServer.Prototype = function() {
     var REQ_STMT = /^require\s*\([^(]*?\)/;
 
     function _prepareSource(source, nodes) {
@@ -155,7 +155,7 @@
       }
     };
   };
-  CommonJSServer.prototype = new CommonJSServer.__prototype__();
+  CommonJSServer.prototype = new CommonJSServer.Prototype();
 
   module.exports = CommonJSServer;
 
