@@ -118,7 +118,6 @@ var ElementRendererTest = function () {
 
       console.log('IMAGES', images);
 
-
     },
 
     // "Render a deeply nested composition of things", function() {
@@ -153,4 +152,4 @@ var ElementRendererTest = function () {
   ];
 };
 
-registerTest(['Application', 'Element Renderer'], new ElementRendererTest());
+registerTest(['Substance.Application', 'Element Renderer'], new ElementRendererTest());
