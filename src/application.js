@@ -16,13 +16,14 @@ var Application = function(config) {
 };
 
 Application.Prototype = function() {
+  
   // Init router
   // ----------
 
   this.initRouter = function() {
     this.router = new Router();
 
-    _.each(Lens.routes, function(route) {
+    _.each(this.config.routes, function(route) {
       this.router.route(route.route, route.name, _.bind(this.controller[route.command], this.controller));
     }, this);
 
@@ -39,7 +40,6 @@ Application.Prototype = function() {
     this.el = this.$el[0];
     this.render();
   };
-
 };
 
 // Setup prototype chain
