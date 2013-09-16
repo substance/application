@@ -25,6 +25,7 @@ Controller.Prototype = function() {
   // 
 
   this.updateState = function(context, state) {
+    console.error('updateState is deprecated, use modifyState. State is now a rich object where context replaces the old state variable');
     var oldContext = this.context;
     this.context = context;
     this.state = state;
@@ -36,7 +37,13 @@ Controller.Prototype = function() {
   //
 
   this.modifyState = function(state) {
+    var prevContext = this.state.context;
     _.extend(this.state, state);
+
+    if (state.context && state.context !== prevContext) {
+      this.trigger('context-changed', state.context);
+    }
+    
     this.trigger('state-changed', this.state.context);
   };
 };
