@@ -62,7 +62,6 @@ ElementRenderer.Prototype = function() {
 };
 
 
-
 // Provides a shortcut syntax interface to ElementRenderer
 // --------
 
@@ -76,7 +75,6 @@ var $$ = function(descriptor, options) {
   // Any occurence of #some_chars
   var id = /#([a-zA-Z0-9_]*)/.exec(descriptor);
   if (id && id[1]) options.id = id[1];
-
 
   // Any occurence of .some-chars
   // if (!options.class) {
