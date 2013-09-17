@@ -35,10 +35,15 @@ Application.Prototype = function() {
   //
 
   this.start = function() {
-    this.initRouter();
+    // First setup the top level view
     this.$el = $('body');
     this.el = this.$el[0];
     this.render();
+
+    // Now the normal app lifecycle can begin
+    // Because app state changes require the main view to be present
+    // Triggers an initial app state change according to url hash fragment
+    this.initRouter();
   };
 };
 
