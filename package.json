@@ -21,7 +21,7 @@
     "estraverse": "0.0.x",
     "MD5": "1.0.x",
     "resolve": "0.3.x",
-    "substance-regexp": "master"
+    "substance-regexp": "0.1.0"
   },
   "version": "0.1.0",
   "engines": {
