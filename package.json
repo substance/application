@@ -1,10 +1,10 @@
 {
   "name": "substance-application",
   "description": "Create Substance apps using Views, Controllers and Modules.",
-  "url": "http://github.com/substance/application/",
+  "url": "http://github.com/substance/application",
   "keywords": [
     "substance",
-    "versioning"
+    "MVC"
   ],
   "author": "Michael Aufreiter",
   "contributors": [
@@ -23,7 +23,7 @@
     "resolve": "0.3.x",
     "substance-regexp": "git+https://github.com/substance/regexp.git#0.1.x"
   },
-  "version": "0.1.1",
+  "version": "0.1.0",
   "engines": {
     "node": ">=0.8.x",
     "npm": ">=1.1.x"
