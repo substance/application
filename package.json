@@ -23,7 +23,7 @@
     "resolve": "0.3.x",
     "substance-regexp": "git+https://github.com/substance/regexp.git#0.2.x"
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "engines": {
     "node": ">=0.8.x",
     "npm": ">=1.1.x"
