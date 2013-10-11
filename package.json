@@ -21,7 +21,7 @@
     "estraverse": "0.0.x",
     "MD5": "1.0.x",
     "resolve": "0.3.x",
-    "substance-regexp": "0.1.0"
+    "substance-regexp": "git+https://github.com/substance/regexp.git#0.2.x"
   },
   "version": "0.1.0",
   "engines": {
