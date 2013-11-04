@@ -61,7 +61,7 @@ View.Prototype = function() {
       if (method) { 
         method.apply(that, fnCall.args);
         return false;
-      }      
+      }
     });
   };
 };
