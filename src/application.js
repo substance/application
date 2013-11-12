@@ -1,9 +1,8 @@
 "use strict";
 
 var View = require("./view");
-var Router = require("./router");
 var util = require("substance-util");
-var _ = require("underscore");
+var Controller = require("./controller");
 
 // Substance.Application
 // ==========================================================================
@@ -61,7 +60,7 @@ Application.Prototype = function() {
         path.push(item.state);
 
         console.log("Application.switchState(): switching contoller", path.join("."), "using", item);
-        controller.switchState(item.state, item.data, function(err) {
+        controller.switchState(new Controller.State(item.state, item.data), function(err) {
           if (err) return _cb(err);
           controller = controller.childController;
           _cb(null);
@@ -74,7 +73,7 @@ Application.Prototype = function() {
         // there might be uninitialized child controllers, which do not have an explicit state
         function _autoInitialize() {
           if (controller && controller.AUTO_INIT) {
-            controller.initialize(null, null, function(err) {
+            controller.initialize(null, function(err) {
               if (err) return cb(err);
               controller = controller.childController;
               _autoInitialize();
@@ -82,7 +81,7 @@ Application.Prototype = function() {
           } else {
             cb(null);
           }
-        };
+        }
         _autoInitialize();
       }
     }, cb);

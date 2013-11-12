@@ -18,22 +18,11 @@ var Controller = function() {
 
 Controller.Prototype = function() {
 
-  // A table to register transition functions
-  // --------
-  // Note: this is part of the Prototype
-  //       However, when you derive a Controller make sure to create a copy
-  //
-  //       this.transitions = _.extend({}, __super__.transitions);
-
-  this.transitions = {};
-
   // A built-in transition function for switching to an initial state
   // --------
   //
 
-  this.intitialize = function(state, args) {
-    throw new Error("Called abstract method 'initialize(",state, args, ") on ", this);
-  };
+  this.intitialize = function(/*state, cb*/) {};
 
   // A built-in transition function which is the opposite to `initialize`
   // ----
@@ -43,27 +32,35 @@ Controller.Prototype = function() {
     this.state = null;
   };
 
-  this.switchState = function(newState, args, cb) {
+  this.switchState = function(newState, cb) {
+    var self = this;
+
+    var _transition = function() {
+      self.transition(newState, function(error, skipped) {
+        if (error) return cb(error);
+        if (!skipped) {
+          self.state = newState;
+          self.afterTransition();
+        }
+        cb(null);
+      });
+    };
 
     // If no transitions are given we still can use dispose/initialize
     // to reach the new state
     if (!this.state) {
-      this.initialize(newState, args, cb);
+      this.initialize(newState, function(error) {
+        if (error) return cb(error);
+        self.state = new Controller.State("initialized");
+        _transition();
+      });
     } else {
-      var state = this.state.name;
-      if (!this.transitions[state]) {
-        this.dispose();
-        this.initialize(newState, args, cb);
-      } else {
-        this.transitions[state].call(this, newState, args, cb);
-      }
+      _transition();
     }
   };
 
-  // should be used by subclasses only
-  this.setState = function(name, data) {
-    this.state = new Controller.State(name, data);
-  };
+  this.afterTransition = function() {};
+
 };
 
 Controller.State = function(name, data) {
