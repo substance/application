@@ -40,28 +40,52 @@ Application.Prototype = function() {
   // Switches the application state
   // --------
   // data: a list of {state: String, data: Object}
-  this.switchState = function(data) {
+
+  this.switchState = function(data, cb) {
+
+    cb = cb || function(err) {
+      if (err) console.error(err);
+    };
+
     // TODO: currently Application does not have a controller.
     var controller = this.controller;
     var path = [];
 
-    for (var i = 0; i < data.length; i++) {
-      if (!controller) {
-        console.error("No controller available for state", path.join("."));
+    util.async.each({
+      items: data,
+      iterator: function(item, _cb) {
+        if (!controller) {
+          console.error("No controller available for state", path.join("."));
+        }
+        // record the state path for debugging
+        path.push(item.state);
+
+        console.log("Application.switchState(): switching contoller", path.join("."), "using", item);
+        controller.switchState(item.state, item.data, function(err) {
+          if (err) return _cb(err);
+          controller = controller.childController;
+          _cb(null);
+        });
+      },
+      finally: function(err) {
+        if (err) return cb(err);
+
+        // TODO: this needs a bit of a better idea
+        // there might be uninitialized child controllers, which do not have an explicit state
+        function _autoInitialize() {
+          if (controller && controller.AUTO_INIT) {
+            controller.initialize(null, null, function(err) {
+              if (err) return cb(err);
+              controller = controller.childController;
+              _autoInitialize();
+            });
+          } else {
+            cb(null);
+          }
+        };
+        _autoInitialize();
       }
-      // record the state path for debugging
-      path.push(data[i].state);
-
-      controller.switchState(data[i].state, data[i].data);
-      controller = controller.childController;
-    }
-
-    // TODO: this needs a bit of a better idea
-    // there might be uninitialized child controllers, which do not have an explicit state
-    while (controller && controller.AUTO_INIT) {
-      controller.initialize();
-      controller = controller.childController;
-    }
+    }, cb);
   };
 };
 

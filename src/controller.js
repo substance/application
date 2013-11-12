@@ -43,22 +43,26 @@ Controller.Prototype = function() {
     this.state = null;
   };
 
-  this.switchState = function(newState, args) {
+  this.switchState = function(newState, args, cb) {
 
     // If no transitions are given we still can use dispose/initialize
     // to reach the new state
-    if (!this.transitions[this.state]) {
-      this.dispose();
-      this.initialize(newState, args);
+    if (!this.state) {
+      this.initialize(newState, args, cb);
     } else {
-      this.transitions[this.state].call(this, newState, args);
+      var state = this.state.name;
+      if (!this.transitions[state]) {
+        this.dispose();
+        this.initialize(newState, args, cb);
+      } else {
+        this.transitions[state].call(this, newState, args, cb);
+      }
     }
   };
 
-  // This should be used by subclasses only
+  // should be used by subclasses only
   this.setState = function(name, data) {
     this.state = new Controller.State(name, data);
-    // TODO: trigger an event about the state change
   };
 };
 
