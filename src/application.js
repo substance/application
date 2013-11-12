@@ -16,18 +16,9 @@ var Application = function(config) {
 };
 
 Application.Prototype = function() {
-  
-  // Init router
-  // ----------
 
-  this.initRouter = function() {
-    this.router = new Router();
-
-    _.each(this.config.routes, function(route) {
-      this.router.route(route.route, route.name, _.bind(this.controller[route.command], this.controller));
-    }, this);
-
-    Router.history.start();
+  this.setRouter = function(router) {
+    this.router = router;
   };
 
   // Start Application
@@ -43,11 +34,36 @@ Application.Prototype = function() {
     // Now the normal app lifecycle can begin
     // Because app state changes require the main view to be present
     // Triggers an initial app state change according to url hash fragment
-    this.initRouter();
+    if (this.router) this.router.start();
+  };
+
+  // Switches the application state
+  // --------
+  // data: a list of {state: String, data: Object}
+  this.switchState = function(data) {
+    // TODO: currently Application does not have a controller.
+    var controller = this.controller;
+    var path = [];
+
+    for (var i = 0; i < data.length; i++) {
+      if (!controller) {
+        console.error("No controller available for state", path.join("."));
+      }
+      // record the state path for debugging
+      path.push(data[i].state);
+
+      controller.switchState(data[i].state, data[i].data);
+      controller = controller.childController;
+    }
+
+    // TODO: this needs a bit of a better idea
+    // there might be uninitialized child controllers, which do not have an explicit state
+    while (controller && controller.AUTO_INIT) {
+      controller.initialize();
+      controller = controller.childController;
+    }
   };
 };
-
-// Setup prototype chain
 
 Application.Prototype.prototype = View.prototype;
 Application.prototype = new Application.Prototype();

@@ -1,28 +1,22 @@
 "use strict";
 
 var util = require("substance-util");
-var _ = require("underscore");
+//var _ = require("underscore");
 
 // Substance.Application.Controller
 // ==========================================================================
 //
 // Application Controller abstraction suggesting strict MVC
 
-var Controller = function(options) {
+var Controller = function() {
   // the state is represented by a unique name
   this.state = null;
 
-  // place to register child controllers
-  this.children = {}
-
+  // Each controller can have a single (active) child controller
+  this.childController = null;
 };
 
 Controller.Prototype = function() {
-
-  this.add = function(name, childController) {
-    this.children[name] = childController;
-    return childController;
-  };
 
   // A table to register transition functions
   // --------
@@ -38,17 +32,14 @@ Controller.Prototype = function() {
   //
 
   this.intitialize = function(state, args) {
-    throw new Error("This method is abstract");
+    throw new Error("Called abstract method 'initialize(",state, args, ") on ", this);
   };
 
   // A built-in transition function which is the opposite to `initialize`
   // ----
   this.dispose = function() {
-    var children = this.children;
-    _.each(children, function(child) {
-      child.dispose();
-    });
-    this.children = {};
+    if (this.childController) this.childController.dispose();
+    this.childController = null;
     this.state = null;
   };
 
@@ -64,20 +55,16 @@ Controller.Prototype = function() {
     }
   };
 
-  // Inrementally updates the controller state
-  // -----------------
-  //
+  // This should be used by subclasses only
+  this.setState = function(name, data) {
+    this.state = new Controller.State(name, data);
+    // TODO: trigger an event about the state change
+  };
+};
 
-  // this.modifyState = function(state) {
-  //   var prevContext = this.state.context;
-  //   _.extend(this.state, state);
-
-  //   if (state.context && state.context !== prevContext) {
-  //     this.trigger('context-changed', state.context);
-  //   }
-
-  //   this.trigger('state-changed', this.state.context);
-  // };
+Controller.State = function(name, data) {
+  this.name = name;
+  this.data = data;
 };
 
 
