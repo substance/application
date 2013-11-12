@@ -1,7 +1,7 @@
 "use strict";
 
 var util = require("substance-util");
-//var _ = require("underscore");
+var _ = require("underscore");
 
 // Substance.Application.Controller
 // ==========================================================================
@@ -51,7 +51,7 @@ Controller.Prototype = function() {
     if (!this.state) {
       this.initialize(newState, function(error) {
         if (error) return cb(error);
-        self.state = new Controller.State("initialized");
+        self.state = {id: "initialized"};
         _transition();
       });
     } else {
@@ -63,11 +63,27 @@ Controller.Prototype = function() {
 
 };
 
-Controller.State = function(name, data) {
-  this.name = name;
-  this.data = data;
+Controller.State = function(id) {
+  if (_.isString(id)) {
+    this.__id__ = id;
+  } else {
+    var obj = arguments[0];
+    this.__id__ = obj["id"];
+    _.each(obj, function(val, key) {
+      if (key === "id") return;
+      this[key] = val;
+    }, this);
+  }
 };
 
+Object.defineProperty(Controller.State.prototype, "id", {
+  set: function() {
+    throw new Error("Property 'id' is immutable");
+  },
+  get: function() {
+    return this.__id__;
+  }
+});
 
 // Setup prototype chain
 Controller.Prototype.prototype = util.Events;

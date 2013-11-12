@@ -50,6 +50,11 @@ Application.Prototype = function() {
     var controller = this.controller;
     var path = [];
 
+    // Note: currently `Controller.switchState` calls `Controller.afterTransition`
+    // if a transition has been done.
+    // It might be desirable that we want to trigger these `afterTransition` not instantly
+    // after a transition has been done on one level, but after the whole application state transition
+    // has been done.
     util.async.each({
       items: data,
       iterator: function(item, _cb) {
@@ -57,10 +62,10 @@ Application.Prototype = function() {
           console.error("No controller available for state", path.join("."));
         }
         // record the state path for debugging
-        path.push(item.state);
+        path.push(item.id);
 
         console.log("Application.switchState(): switching contoller", path.join("."), "using", item);
-        controller.switchState(new Controller.State(item.state, item.data), function(err) {
+        controller.switchState(new Controller.State(item), function(err) {
           if (err) return _cb(err);
           controller = controller.childController;
           _cb(null);
