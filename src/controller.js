@@ -32,24 +32,63 @@ Controller.Prototype = function() {
     this.state = null;
   };
 
-  this.switchState = function(newState, cb) {
+  this.transition = function(newState, cb) {
+    cb(null);
+  };
+
+  this.switchState = function(state, cb) {
     var self = this;
 
+    cb = cb || function(err) {
+      throw new Error(err);
+    };
+
+    if (!_.isArray(state)) {
+      state = [state];
+    }
+
+    var _state = state.shift();
+
     var _transition = function() {
-      self.transition(newState, function(error, skipped) {
+      self.transition(_state, function(error, skipped) {
         if (error) return cb(error);
         if (!skipped) {
-          self.state = newState;
-          self.afterTransition();
+          self.state = _state;
+          // recurse
+          if (self.childController) {
+            if (state.length > 0) {
+              self.childController.switchState(state, function(error) {
+                if (error) return cb(error);
+                self.afterTransition();
+                cb(null);
+              });
+            }
+            else if (self.childController.AUTO_INIT) {
+              self.childController.initialize(null, function(error){
+                if (error) return cb(error);
+                self.afterTransition();
+                cb(null);
+              });
+            }
+            else {
+              return cb("Unsufficient state data provided! Child controller needs a transition!");
+            }
+          }
+
+          else {
+            self.afterTransition();
+            cb(null);
+          }
+        } else {
+          cb(null);
         }
-        cb(null);
       });
     };
 
     // If no transitions are given we still can use dispose/initialize
     // to reach the new state
     if (!this.state) {
-      this.initialize(newState, function(error) {
+      this.initialize(_state, function(error) {
         if (error) return cb(error);
         self.state = {id: "initialized"};
         _transition();
