@@ -40,7 +40,7 @@ Controller.Prototype = function() {
     var self = this;
 
     cb = cb || function(err) {
-      throw new Error(err);
+      if (err) throw new Error(err);
     };
 
     if (!_.isArray(state)) {
