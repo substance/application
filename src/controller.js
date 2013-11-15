@@ -40,20 +40,32 @@ Controller.Prototype = function() {
     cb(null);
   };
 
-  this.switchState = function(state, cb) {
+  this.switchState = function(state, options, cb) {
     var self = this;
+
+    if (arguments.length === 1 && _.isFunction(options)) {
+      cb = options;
+      options = {};
+    }
+
+    options = options || {updateRoute: true, replace: false};
+
     cb = cb || function(err) {
-      if (err) throw new Error(err);
+      if (err) {
+        throw new Error(err);
+      }
     };
+
+    var oldState = this.state;
     this.__switchState__(state, function(error) {
       if (error) return cb(error);
-      if (self.changeListener) self.changeListener.stateChanged();
+      if (self.changeListener) self.changeListener.stateChanged(this, oldState, options);
       cb(null);
     });
   };
 
   this.__switchState__ = function(state, cb) {
-    console.log("Controller.switchState", state);
+    // console.log("Controller.switchState", JSON.stringify(state));
     var self = this;
 
     cb = cb || function(err) {
@@ -65,18 +77,23 @@ Controller.Prototype = function() {
     }
 
     var _state = state.shift();
+    var _skipped;
 
     var _afterTransition = function() {
-      var oldState = self.state;
-      self.state = _state;
-      self.afterTransition(oldState);
+      if (!_skipped) {
+        var oldState = self.state;
+        self.state = _state;
+        self.afterTransition(oldState);
+      }
       cb(null);
     };
 
     var _transition = function() {
-      console.log("Transition to", _state);
-      self.transition(_state, function(error) {
+      // console.log("Transition to", _state);
+      self.transition(_state, function(error, skipped) {
         if (error) return cb(error);
+
+        _skipped = skipped;
 
         // The transition has been done in this level, i.e., child controllers
         // might have been created.
@@ -99,8 +116,8 @@ Controller.Prototype = function() {
           else {
             return cb("Unsufficient state data provided! Child controller needs a transition!");
           }
-        }
-        else {
+
+        } else {
           _afterTransition();
         }
       });
@@ -109,7 +126,7 @@ Controller.Prototype = function() {
     // If no transitions are given we still can use dispose/initialize
     // to reach the new state
     if (!this.state) {
-      console.log("Initializing...", _state);
+      // console.log("Initializing...", _state);
       this.initialize(_state, function(error) {
         if (error) return cb(error);
         self.state = {id: "initialized"};

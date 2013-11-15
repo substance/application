@@ -43,16 +43,28 @@ Application.Prototype = function() {
   // --------
   // appState: a list of state objects
 
-  this.switchState = function(appState, cb) {
-    cb = cb || function(error) {
-      if (error) throw new Error(error);
-    };
-    this.controller.__switchState__(appState, cb);
+  var DEFAULT_SWITCH_OPTIONS = {
+    updateRoute: true,
+    replace: false
   };
 
-  this.extractStateFromURL = function(locationSearch) {
-    var query = locationSearch.substring(1);
+  this.switchState = function(appState, options, cb) {
+    var self = this;
+    options = _.extend(DEFAULT_SWITCH_OPTIONS, options || {});
+    this.controller.__switchState__(appState, function(error) {
+      if (error) {
+        if (cb) cb(error);
+        else util.util.printStackTrace(error);
+        return;
+      }
+      if (options["updateRoute"]) {
+        self.updateRoute(options);
+      }
+      if (cb) cb(null);
+    });
+  };
 
+  this.stateFromFragment = function(fragment) {
     function _createState(stateNames) {
       var state = [];
       for (var i = 0; i < stateNames.length; i++) {
@@ -62,7 +74,7 @@ Application.Prototype = function() {
     }
 
     var state;
-    var params = query.split(";");
+    var params = fragment.split(";");
 
     var i, pair;
     var values = [];
@@ -70,6 +82,9 @@ Application.Prototype = function() {
       pair = params[i].split("=");
       var key = pair[0];
       var val = pair[1];
+      if (!key || val === undefined) {
+        continue;
+      }
       if (key === "state") {
         var stateNames = val.split(".");
         state = _createState(stateNames);
@@ -98,11 +113,14 @@ Application.Prototype = function() {
     return appState;
   };
 
-  this.updateURL = function() {
-    console.log("Application.updateURL()...");
+  this.updateRoute = function(options) {
+    if (!this.router) return;
+
+    options = options || {};
+
     var appState = this.getState();
     var stateIds = [];
-    var queryParams = [];
+    var stateParams = [];
     for (var i = 0; i < appState.length; i++) {
       var s = appState[i];
       if (!s) continue;
@@ -117,19 +135,18 @@ Application.Prototype = function() {
           console.error("Only String state variables are allowed");
           continue;
         }
-        queryParams.push(i+"."+key+"="+val);
+        stateParams.push(i+"."+key+"="+val);
       }
     }
-
-    queryParams.unshift("state="+stateIds.join("."));
-    var queryString = "?" + queryParams.join(";");
-
-    window.history.pushState(appState, "", "/"+queryString);
+    var stateString = "state="+stateIds.join(".") + ";" + stateParams.join(";");
+    this.router.navigate(stateString, {trigger: false, replace: options.replace});
   };
 
   // Called by a sub controller when a sub-state has been changed
-  this.stateChanged = function() {
-    this.updateURL();
+  this.stateChanged = function(controller, oldState, options) {
+    if (options["updateRoute"]) {
+      this.updateRoute(options);
+    }
   };
 };
 
