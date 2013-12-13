@@ -1,8 +1,8 @@
 "use strict";
 
 var View = require("./view");
-//var util = require("substance-util");
-var Controller = require("./controller");
+var util = require("substance-util");
+// var Controller = require("./controller");
 var _ = require("underscore");
 
 // Substance.Application
@@ -54,7 +54,7 @@ Application.Prototype = function() {
     this.controller.__switchState__(appState, function(error) {
       if (error) {
         if (cb) cb(error);
-        else util.util.printStackTrace(error);
+        else util.printStackTrace(error);
         return;
       }
       if (options["updateRoute"]) {
@@ -128,7 +128,7 @@ Application.Prototype = function() {
       for (var key in s) {
         var val = s[key];
         if (key === "id" || key === "__id__") {
-          continue
+          continue;
         }
         // Note: currently only String variables are allowed as state variables
         if (!_.isString(val)) {
