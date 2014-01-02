@@ -20,6 +20,13 @@ var View = function(options) {
 
 View.Prototype = function() {
 
+  // Default dispose function
+  // --------
+  //
+
+  this.dispose = function() {
+    this.stopListening();
+  };
 
   // Shorthand for selecting elements within the view
   // ----------
@@ -69,6 +76,7 @@ View.Prototype = function() {
     document.title = newTitle;
     window.history.replaceState({}, document.title, window.location.href);
   };
+
 };
 
 
