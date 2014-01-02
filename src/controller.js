@@ -90,37 +90,41 @@ Controller.Prototype = function() {
 
     var _transition = function() {
       // console.log("Transition to", _state);
-      self.transition(_state, function(error, skipped) {
-        if (error) return cb(error);
+      try {
+        self.transition(_state, function(error, skipped) {
+          if (error) return cb(error);
 
-        _skipped = skipped;
+          _skipped = skipped;
 
-        // The transition has been done in this level, i.e., child controllers
-        // might have been created.
-        // If a child controller exists we recurse into the next level.
-        // After that the controller gets triggered about the finished transition.
+          // The transition has been done in this level, i.e., child controllers
+          // might have been created.
+          // If a child controller exists we recurse into the next level.
+          // After that the controller gets triggered about the finished transition.
 
-        if (self.childController) {
-          if (state.length > 0) {
-            self.childController.__switchState__(state, function(error) {
-              if (error) return cb(error);
-              _afterTransition();
-            });
+          if (self.childController) {
+            if (state.length > 0) {
+              self.childController.__switchState__(state, function(error) {
+                if (error) return cb(error);
+                _afterTransition();
+              });
+            }
+            else if (self.childController.AUTO_INIT) {
+              self.childController.initialize(null, function(error){
+                if (error) return cb(error);
+                _afterTransition();
+              });
+            }
+            else {
+              return cb("Unsufficient state data provided! Child controller needs a transition!");
+            }
+
+          } else {
+            _afterTransition();
           }
-          else if (self.childController.AUTO_INIT) {
-            self.childController.initialize(null, function(error){
-              if (error) return cb(error);
-              _afterTransition();
-            });
-          }
-          else {
-            return cb("Unsufficient state data provided! Child controller needs a transition!");
-          }
-
-        } else {
-          _afterTransition();
-        }
-      });
+        });
+      } catch (err) {
+        cb(err);
+      }
     };
 
     // If no transitions are given we still can use dispose/initialize
