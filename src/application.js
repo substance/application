@@ -53,8 +53,12 @@ Application.Prototype = function() {
     options = _.extend(DEFAULT_SWITCH_OPTIONS, options || {});
     this.controller.__switchState__(appState, function(error) {
       if (error) {
-        if (cb) cb(error);
-        else util.printStackTrace(error);
+        if (cb) {
+          cb(error);
+        } else {
+          console.error(error.message);
+          util.printStackTrace(error);
+        }
         return;
       }
       if (options["updateRoute"]) {
