@@ -52,6 +52,8 @@ Controller.Prototype = function() {
 
     cb = cb || function(err) {
       if (err) {
+        console.error("Error during switch state", state, options);
+        util.printStackTrace(err);
         throw new Error(err);
       }
     };
