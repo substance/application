@@ -51,6 +51,10 @@ Application.Prototype = function() {
   this.switchState = function(appState, options, cb) {
     var self = this;
     options = _.extend(DEFAULT_SWITCH_OPTIONS, options || {});
+
+    // keep the old state for afterTransition-handler
+    var oldAppState = this.getState();
+
     this.controller.__switchState__(appState, function(error) {
       if (error) {
         if (cb) {
@@ -64,6 +68,21 @@ Application.Prototype = function() {
       if (options["updateRoute"]) {
         self.updateRoute(options);
       }
+
+      if (self.afterTransition) {
+        try {
+          self.afterTransition(appState, oldAppState);
+        } catch (err) {
+          if (cb) {
+            cb(err);
+          } else {
+            console.error(err.message);
+            util.printStackTrace(err);
+          }
+          return;
+        }
+      }
+
       if (cb) cb(null);
     });
   };
@@ -108,6 +127,8 @@ Application.Prototype = function() {
   };
 
   this.getState = function() {
+    if (!this.controller.state) return null;
+
     var appState = [];
     var controller = this.controller;
     while(controller) {
