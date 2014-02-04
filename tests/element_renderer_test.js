@@ -5,7 +5,6 @@
 
 var Test = require('substance-test');
 var assert = Test.assert;
-var registerTest = Test.registerTest;
 
 var ElementRenderer = require("../src/renderers/element_renderer");
 var $$ = ElementRenderer.$$;
@@ -15,10 +14,10 @@ var $$ = ElementRenderer.$$;
 // ========
 
 var ElementRendererTest = function () {
+  Test.call(this);
+};
 
-  this.setup = function() {
-    // this.importer = new Importer();
-  };
+ElementRendererTest.Prototype = function() {
 
   this.actions = [
 
@@ -147,9 +146,9 @@ var ElementRendererTest = function () {
     //   // Manipulate stuff using regular DOM API
     //   cat1.appendChild($$('li', {"text": "C"}));
     // }
-
-
   ];
 };
+ElementRendererTest.Prototype.prototype = Test.prototype;
+ElementRendererTest.prototype = new ElementRendererTest.Prototype();
 
-registerTest(['Substance.Application', 'Element Renderer'], new ElementRendererTest());
+Test.registerTest(['Substance.Application', 'Element Renderer'], new ElementRendererTest());
