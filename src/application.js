@@ -12,6 +12,7 @@ var _ = require("underscore");
 
 var Application = function(config) {
   View.call(this);
+
   this.config = config;
 
   this.__controller__ = null;
@@ -27,10 +28,18 @@ Application.Prototype = function() {
   // ----------
   //
 
-  this.start = function() {
+  this.start = function(options) {
     // First setup the top level view
-    this.$el = $('body');
-    this.el = this.$el[0];
+    if (options.el) {
+      this.el = options.el;
+      this.$el = $(this.el);
+    } else {
+      // Defaults to body element
+      this.$el = $('body');
+      this.el = this.$el[0];
+    }
+
+    if (this.initialize) this.initialize();
     this.render();
 
     // Now the normal app lifecycle can begin
