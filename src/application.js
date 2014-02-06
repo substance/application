@@ -29,6 +29,7 @@ Application.Prototype = function() {
   //
 
   this.start = function(options) {
+    options = options || {};
     // First setup the top level view
     if (options.el) {
       this.el = options.el;
