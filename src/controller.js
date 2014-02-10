@@ -41,6 +41,7 @@ Controller.Prototype = function() {
   };
 
   this.switchState = function(state, options, cb) {
+    if (!cb && _.isFunction(options)) cb = options;
     var self = this;
 
     if (arguments.length === 1 && _.isFunction(options)) {
