@@ -162,7 +162,7 @@ Application.Prototype = function() {
       stateIds.push(s.id);
       for (var key in s) {
         var val = s[key];
-        if (key === "id" || key === "__id__") {
+        if (key === "id" || key === "__id__" || key === "options") {
           continue;
         }
         // Note: currently only String variables are allowed as state variables
