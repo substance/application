@@ -36,6 +36,25 @@ Controller.Prototype = function() {
     this.state = null;
   };
 
+  // State transition
+  // ----
+  // A typical transition implementation consists of 3 blocks:
+  //
+  // 1. Reflexive transitions (idem-potent checks):
+  //    You have to check if a transition is actually necessary.
+  //    If not call `cb(null, skipTransition=true)`
+  //
+  // 2. Disposal
+  //    Clean up anything left from the old state
+  //
+  // 3. New state
+  //    Create anything necessary for the new state
+  //
+  // Note: to provide additional run-time information you can access
+  //       the options with `newState.options`
+  //       However, when the state is loaded e.g. from the URL
+  //       this information is not available.
+
   this.transition = function(newState, cb) {
     cb(null);
   };
@@ -60,14 +79,14 @@ Controller.Prototype = function() {
     };
 
     var oldState = this.state;
-    this.__switchState__(state, function(error) {
+    this.__switchState__(state, options, function(error) {
       if (error) return cb(error);
       if (self.changeListener) self.changeListener.stateChanged(this, oldState, options);
       cb(null);
     });
   };
 
-  this.__switchState__ = function(state, cb) {
+  this.__switchState__ = function(appState, options, cb) {
     // console.log("Controller.switchState", JSON.stringify(state));
     var self = this;
 
@@ -75,11 +94,18 @@ Controller.Prototype = function() {
       if (err) throw new Error(err);
     };
 
-    if (!_.isArray(state)) {
-      state = [state];
+    if (!_.isArray(appState)) {
+      appState = [appState];
     }
 
-    var _state = state.shift();
+    var _state = appState.shift();
+
+    // Note: adding the options here to allow to provide custom dynamic data.
+    //       However, you should use that rarely, as dynamic state information
+    //       is not serialized. E.g., when loading the state from URL this information
+    //       will not be available.
+    _state.options = options;
+
     var _skipped;
 
     var _afterTransition = function() {
@@ -105,8 +131,8 @@ Controller.Prototype = function() {
           // After that the controller gets triggered about the finished transition.
 
           if (self.childController) {
-            if (state.length > 0) {
-              self.childController.__switchState__(state, function(error) {
+            if (appState.length > 0) {
+              self.childController.__switchState__(appState, options, function(error) {
                 if (error) return cb(error);
                 _afterTransition();
               });

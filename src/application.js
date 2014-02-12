@@ -65,7 +65,7 @@ Application.Prototype = function() {
     // keep the old state for afterTransition-handler
     var oldAppState = this.getState();
 
-    this.controller.__switchState__(appState, function(error) {
+    this.controller.__switchState__(appState, options, function(error) {
       if (error) {
         if (cb) {
           cb(error);
