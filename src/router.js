@@ -2,6 +2,7 @@
 
 var util = require("substance-util");
 var _ = require("underscore");
+var $ = window.$;
 
 // Application.Router
 // ---------------
@@ -11,7 +12,7 @@ var _ = require("underscore");
 // Routers map faux-URLs to actions, and fire events when routes are
 // matched. Creating a new one sets its `routes` hash, if not set statically.
 var Router = function(options) {
-  options || (options = {});
+  options = options || {};
   if (options.routes) this.routes = options.routes;
   this._bindRoutes();
   this.initialize.apply(this, arguments);
@@ -47,7 +48,7 @@ _.extend(Router.prototype, util.Events, {
     var router = this;
     Router.history.route(route, function(fragment) {
       var args = router._extractParameters(route, fragment);
-      callback && callback.apply(router, args);
+      if (callback) callback.apply(router, args);
       router.trigger.apply(router, ['route:' + name].concat(args));
       router.trigger('route', name, args);
       Router.history.trigger('route', router, name, args);
@@ -68,7 +69,7 @@ _.extend(Router.prototype, util.Events, {
     if (!this.routes) return;
     this.routes = _.result(this, 'routes');
     var route, routes = _.keys(this.routes);
-    while ((route = routes.pop()) != null) {
+    while ((route = routes.pop()) !== null) {
       this.route(route, this.routes[route]);
     }
   },
@@ -142,15 +143,15 @@ _.extend(History.prototype, util.Events, {
 
   // Gets the true hash value. Cannot use location.hash directly due to bug
   // in Firefox where location.hash will always be decoded.
-  getHash: function(window) {
-    var match = (window || this).location.href.match(/#(.*)$/);
+  getHash: function(_window) {
+    var match = (_window || window).location.href.match(/#(.*)$/);
     return match ? match[1] : '';
   },
 
   // Get the cross-browser normalized URL fragment, either from the URL,
   // the hash, or the override.
   getFragment: function(fragment, forcePushState) {
-    if (fragment == null) {
+    if (fragment === null || fragment === undefined) {
       if (this._hasPushState || !this._wantsHashChange || forcePushState) {
         fragment = this.location.pathname;
         var root = this.root.replace(trailingSlash, '');
@@ -176,8 +177,8 @@ _.extend(History.prototype, util.Events, {
     this._wantsPushState  = !!this.options.pushState;
     this._hasPushState    = !!(this.options.pushState && this.history && this.history.pushState);
     var fragment          = this.getFragment();
-    var docMode           = document.documentMode;
-    var oldIE             = (isExplorer.exec(navigator.userAgent.toLowerCase()) && (!docMode || docMode <= 7));
+    var docMode           = window.document.documentMode;
+    var oldIE             = (isExplorer.exec(window.navigator.userAgent.toLowerCase()) && (!docMode || docMode <= 7));
 
     // Normalize root to always include a leading and trailing slash.
     this.root = ('/' + this.root + '/').replace(rootStripper, '/');
@@ -215,7 +216,7 @@ _.extend(History.prototype, util.Events, {
     // in a browser where it could be `pushState`-based instead...
     } else if (this._wantsPushState && this._hasPushState && atRoot && loc.hash) {
       this.fragment = this.getHash().replace(routeStripper, '');
-      this.history.replaceState({}, document.title, this.root + this.fragment + loc.search);
+      this.history.replaceState({}, window.document.title, this.root + this.fragment + loc.search);
     }
 
     if (!this.options.silent) return this.loadUrl();
@@ -237,14 +238,14 @@ _.extend(History.prototype, util.Events, {
 
   // Checks the current URL to see if it has changed, and if it has,
   // calls `loadUrl`, normalizing across the hidden iframe.
-  checkUrl: function(e) {
+  checkUrl: function() {
     var current = this.getFragment();
     if (current === this.fragment && this.iframe) {
       current = this.getFragment(this.getHash(this.iframe));
     }
     if (current === this.fragment) return false;
     if (this.iframe) this.navigate(current);
-    this.loadUrl() || this.loadUrl(this.getHash());
+    if (!this.loadUrl()) this.loadUrl(this.getHash());
   },
 
   // Attempt to load the current URL fragment. If a route succeeds with a
@@ -278,7 +279,7 @@ _.extend(History.prototype, util.Events, {
 
     // If pushState is available, we use it to set the fragment as a real URL.
     if (this._hasPushState) {
-      this.history[options.replace ? 'replaceState' : 'pushState']({}, document.title, url);
+      this.history[options.replace ? 'replaceState' : 'pushState']({}, window.document.title, url);
 
     // If hash changes haven't been explicitly disabled, update the hash
     // fragment to store history.
@@ -313,7 +314,7 @@ _.extend(History.prototype, util.Events, {
   }
 });
 
-Router.history = new History;
+Router.history = new History();
 
 
 module.exports = Router;

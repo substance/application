@@ -15,11 +15,11 @@ var ElementRenderer = function(attributes) {
   // Pull off preserved properties from attributes
   // --------
 
-  this.tagName = attributes.tag;  
+  this.tagName = attributes.tag;
   this.children = attributes.children || [];
   this.text = attributes.text || "";
   this.html = attributes.html;
-  
+
   delete attributes.children;
   delete attributes.text;
   delete attributes.html;
@@ -35,11 +35,11 @@ ElementRenderer.Prototype = function() {
   // --------
 
   this.render = function() {
-    var el = document.createElement(this.tagName);
+    var el = window.document.createElement(this.tagName);
     if (this.html) {
       el.innerHTML = this.html;
     } else {
-      el.textContent = this.text;  
+      el.textContent = this.text;
     }
 
     // Set attributes based on element spec
@@ -66,7 +66,7 @@ ElementRenderer.Prototype = function() {
 // --------
 
 var $$ = function(descriptor, options) {
-  var options = options  || {};
+  options = options  || {};
 
   // Extract tagName, defaults to 'div'
   var tagName = /^([a-zA-Z0-9]*)/.exec(descriptor);
@@ -95,7 +95,7 @@ var $$ = function(descriptor, options) {
       return m.match[1];
     }).join(' ');
   }
-  
+
   return new ElementRenderer(options);
 };
 

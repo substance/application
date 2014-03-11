@@ -1,15 +1,14 @@
 "use strict";
 
 var util = require("substance-util");
+var $ = window.$;
 
 // Substance.View
 // ==========================================================================
 //
 // Application View abstraction, inspired by Backbone.js
 
-var View = function(options) {
-  var that = this;
-
+var View = function() {
   // Either use the provided element or make up a new element
   this.$el = $('<div/>');
   this.el = this.$el[0];
@@ -73,8 +72,8 @@ View.Prototype = function() {
   };
 
   this.updateTitle = function(newTitle) {
-    document.title = newTitle;
-    window.history.replaceState({}, document.title, window.location.href);
+    window.document.title = newTitle;
+    window.history.replaceState({}, window.document.title, window.location.href);
   };
 
 };

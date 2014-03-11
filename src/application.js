@@ -2,8 +2,8 @@
 
 var View = require("./view");
 var util = require("substance-util");
-// var Controller = require("./controller");
 var _ = require("underscore");
+var $ = window.$;
 
 // Substance.Application
 // ==========================================================================
