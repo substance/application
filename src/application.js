@@ -3,6 +3,7 @@
 var View = require("./view");
 var util = require("substance-util");
 var _ = require("underscore");
+var $ = require("jquery");
 
 // Substance.Application
 // ==========================================================================
@@ -28,7 +29,6 @@ Application.Prototype = function() {
   //
 
   this.start = function(options) {
-    var $ = window.$;
 
     options = options || {};
     // First setup the top level view
