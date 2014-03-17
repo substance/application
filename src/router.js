@@ -2,7 +2,6 @@
 
 var util = require("substance-util");
 var _ = require("underscore");
-var $ = window.$;
 
 // Application.Router
 // ---------------
@@ -166,6 +165,8 @@ _.extend(History.prototype, util.Events, {
   // Start the hash change handling, returning `true` if the current URL matches
   // an existing route, and `false` otherwise.
   start: function(options) {
+    var $ = window.$;
+
     if (History.started) throw new Error("Router.history has already been started");
     History.started = true;
 
@@ -225,6 +226,8 @@ _.extend(History.prototype, util.Events, {
   // Disable Router.history, perhaps temporarily. Not useful in a real app,
   // but possibly useful for unit testing Routers.
   stop: function() {
+    var $ = window.$;
+
     $(window).off('popstate', this.checkUrl).off('hashchange', this.checkUrl);
     clearInterval(this._checkUrlInterval);
     History.started = false;
