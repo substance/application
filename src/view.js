@@ -1,7 +1,6 @@
 "use strict";
 
 var util = require("substance-util");
-var $ = require("jquery");
 
 // Substance.View
 // ==========================================================================
@@ -10,7 +9,7 @@ var $ = require("jquery");
 
 var View = function() {
   // Either use the provided element or make up a new element
-  this.$el = $('<div/>');
+  this.$el = window.$('<div/>');
   this.el = this.$el[0];
 
   this.dispatchDOMEvents();
@@ -60,7 +59,7 @@ View.Prototype = function() {
       // Matches things like this
       // showReport(foo) => ["showReport(foo)", "showReport", "foo"]
       // showReport(12) => ["showReport(12)", "showReport", "12"]
-      var fnCall = extractFunctionCall($(e.currentTarget).attr('sbs-click'));
+      var fnCall = extractFunctionCall(window.$(e.currentTarget).attr('sbs-click'));
 
       // Event bubbles up if there is no handler
       var method = that[fnCall.method];

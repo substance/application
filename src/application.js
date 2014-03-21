@@ -3,7 +3,6 @@
 var View = require("./view");
 var util = require("substance-util");
 var _ = require("underscore");
-var $ = require("jquery");
 
 // Substance.Application
 // ==========================================================================
@@ -29,6 +28,8 @@ Application.Prototype = function() {
   //
 
   this.start = function(options) {
+    // NOTE: we have to import jquery this way as this class is used also used in a node context
+    var $ = window.$;
 
     options = options || {};
     // First setup the top level view

@@ -2,7 +2,16 @@
 
 var util = require("substance-util");
 var _ = require("underscore");
-var $ = require("jquery");
+
+// NOTE: a bit nasty but we have to import jquery this way as this class is used also used in a node context
+// TODO: try to avoid that this gets required when in node
+var $;
+if (typeof window !== 'undefined') {
+  $ = window.$;
+} else {
+  console.error("FIXME: require router.js only when you are in a window context.");
+  $ = null;
+}
 
 // Application.Router
 // ---------------
