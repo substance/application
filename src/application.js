@@ -9,11 +9,13 @@ var _ = require("underscore");
 //
 // Application abstraction suggesting strict MVC
 
+// TODO: does this really need to be a View?
+// It would be better to have controller to create view which
+// is used has top level view.
 var Application = function(config) {
   View.call(this);
 
-  this.config = config;
-
+  this.config = config || {};
   this.__controller__ = null;
 };
 
@@ -151,7 +153,9 @@ Application.Prototype = function() {
   };
 
   this.updateRoute = function(options) {
-    if (!this.router) return;
+    if (!this.router && !this.config["headless"]) {
+      throw new Error("Application.updateRoute(): application has no router.");
+    }
 
     options = options || {};
 
@@ -190,6 +194,8 @@ Application.Prototype = function() {
 Application.Prototype.prototype = View.prototype;
 Application.prototype = new Application.Prototype();
 
+// TODO: this is dangerous as it obscures the underlying mechanism.
+// Try to switch to a more explicit approach.
 Object.defineProperty(Application.prototype, "controller", {
   set: function(controller) {
     controller.setChangeListener(this);
