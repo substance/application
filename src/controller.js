@@ -120,10 +120,17 @@ Controller.Prototype = function() {
     var _transition = function() {
       // console.log("Transition to", _state);
       try {
-        self.transition(_state, function(error, skipped) {
+        self.transition(_state, function(error, options) {
           if (error) return cb(error);
 
-          _skipped = skipped;
+          // legacy: using an object {skip: true} now
+          if (_.isBoolean(options)) {
+            _skipped = options;
+          } else {
+            if (options) {
+              _skipped = options.skip;
+            }
+          }
 
           // The transition has been done in this level, i.e., child controllers
           // might have been created.
