@@ -104,7 +104,7 @@ Controller.Prototype = function() {
     //       However, you should use that rarely, as dynamic state information
     //       is not serialized. E.g., when loading the state from URL this information
     //       will not be available.
-    _state.options = options;
+    _state.options = options || {};
 
     var _skipped;
 
