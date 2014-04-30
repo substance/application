@@ -64,7 +64,7 @@ Application.Prototype = function() {
 
   this.switchState = function(appState, options, cb) {
     var self = this;
-    options = _.extend(DEFAULT_SWITCH_OPTIONS, options || {});
+    options = _.extend({}, DEFAULT_SWITCH_OPTIONS, options || {});
 
     // keep the old state for afterTransition-handler
     var oldAppState = this.getState();
