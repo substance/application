@@ -113,6 +113,8 @@ Controller.Prototype = function() {
         var oldState = self.state;
         self.state = _state;
         self.afterTransition(oldState);
+        // clear the options as they should only be valid during transition
+        self.state.options = {};
       }
       cb(null);
     };
@@ -144,14 +146,14 @@ Controller.Prototype = function() {
                 _afterTransition();
               });
             }
-            else if (self.childController.AUTO_INIT) {
-              self.childController.initialize(null, function(error){
+            else if (self.childController.DEFAULT_STATE) {
+              self.childController.__switchState__(self.childController.DEFAULT_STATE, options, function(error){
                 if (error) return cb(error);
                 _afterTransition();
               });
             }
             else {
-              return cb("Unsufficient state data provided! Child controller needs a transition!");
+              throw new Error("Unsufficient state data provided! Child controller needs a transition!");
             }
 
           } else {
