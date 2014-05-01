@@ -18,6 +18,8 @@ var Controller = function() {
 
   // Each controller can have a single (active) child controller
   this.__childController__ = null;
+
+  this.__parentController__ = null;
 };
 
 Controller.Prototype = function() {
@@ -205,6 +207,8 @@ Controller.Prototype = function() {
     } else {
       childController.changeListener = this.changeListener;
     }
+
+    childController.__parentController__ = this;
     this.__childController__ = childController;
   };
 
@@ -215,8 +219,13 @@ Controller.Prototype = function() {
     }
   };
 
+  // changelistener = parentController
   this.setChangeListener = function(changeListener) {
     this.changeListener = changeListener;
+  };
+
+  this.sendError = function(err) {
+    if (this.__parentController__) this.__parentController__.sendError(err);
   };
 
 };

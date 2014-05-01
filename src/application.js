@@ -189,6 +189,10 @@ Application.Prototype = function() {
       this.updateRoute(options);
     }
   };
+  
+  this.sendError = function(err) {
+    throw err;
+  };
 };
 
 Application.Prototype.prototype = View.prototype;
