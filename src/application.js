@@ -45,7 +45,7 @@ Application.Prototype = function() {
     }
 
     if (this.initialize) this.initialize();
-    this.render();
+    if (this.render) this.render();
 
     // Now the normal app lifecycle can begin
     // Because app state changes require the main view to be present
@@ -189,7 +189,7 @@ Application.Prototype = function() {
       this.updateRoute(options);
     }
   };
-  
+
   this.sendError = function(err) {
     throw err;
   };
