@@ -22,6 +22,13 @@
     this.sources = {};
     this.map = {};
     this.aliases = {};
+    this.ignores = {};
+    if (options.ignores) {
+      for (var i = 0; i < options.ignores.length; i++) {
+        var key = options.ignores[i];
+        this.ignores[key] = true;
+      }
+    }
   };
 
   CommonJSServer.Prototype = function() {
@@ -114,11 +121,10 @@
     }
 
     this.update = function(path) {
-
       var entries = traverseDependencies(path, this.root, {
-        cache: this.cache
+        cache: this.cache,
+        ignores: this.ignores
       });
-
       for (var p in entries) {
         var entry = entries[p];
         _updateEntry(this, p, entry);
@@ -126,12 +132,10 @@
     };
 
     this.boot = function(bootSpec) {
-
       var relPath = relativeResolve({
         root: this.root,
         path: bootSpec.source
       });
-
       this.aliases[bootSpec.alias] = relPath.canonicalName;
       this.update(bootSpec.source);
     };
