@@ -183,10 +183,11 @@ Controller.Prototype = function() {
 
   this.afterTransition = function() {};
 
-  this.setChildController = function(childController) {
-    if (this.__childController__ && this.__childController__.state) {
-      console.error("The child controller has not been disposed. Call 'disposeChildController()' first. However, let me do this for you once more...");
-      this.__childController__.dispose();
+  this.setChildController = function(childController, options) {
+    options = options || {};
+    if (this.__childController__ && this.__childController__.state && !options.nowarn) {
+      console.error("The child controller has not been disposed. Call 'disposeChildController()' first.");
+      // this.__childController__.dispose();
     }
     if (!childController) {
       return;
