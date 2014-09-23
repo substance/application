@@ -16,11 +16,6 @@
   },
   "dependencies":{
     "underscore":"",
-    "esprima":"1.0.x",
-    "escodegen":"0.0.x",
-    "estraverse":"0.0.x",
-    "MD5":"1.0.x",
-    "resolve":"0.3.x",
     "substance-regexp": ""
   },
   "version":"0.2.0"
