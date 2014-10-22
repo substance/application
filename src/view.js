@@ -7,7 +7,7 @@ var util = require("substance-util");
 //
 // Application View abstraction, inspired by Backbone.js
 
-var View = function(options) {
+var View = function() {
   var that = this;
 
   // Either use the provided element or make up a new element
@@ -50,15 +50,15 @@ View.Prototype = function() {
     }
 
     this.$el.delegate('[sbs-click]', 'click', function(e) {
-      
+
       // Matches things like this
       // showReport(foo) => ["showReport(foo)", "showReport", "foo"]
       // showReport(12) => ["showReport(12)", "showReport", "12"]
       var fnCall = extractFunctionCall($(e.currentTarget).attr('sbs-click'));
-      
+
       // Event bubbles up if there is no handler
       var method = that[fnCall.method];
-      if (method) { 
+      if (method) {
         method.apply(that, fnCall.args);
         return false;
       }
