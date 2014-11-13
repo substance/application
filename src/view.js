@@ -7,12 +7,12 @@ var util = require("substance-util");
 //
 // Application View abstraction, inspired by Backbone.js
 
-var View = function() {
+var View = function(options) {
+  options = options || {};
   var that = this;
-
   // Either use the provided element or make up a new element
-  this.$el = $('<div/>');
-  this.el = this.$el[0];
+  this.el = options.el || window.document.createElement(options.elementType || 'div');
+  this.$el = $(this.el);
 
   this.dispatchDOMEvents();
 };
