@@ -29,6 +29,10 @@ View.Prototype = function() {
     return this.$el.find(selector);
   };
 
+  this.render = function() {
+    return this;
+  };
+
   // Dispatching DOM events (like clicks)
   // ----------
   //
