@@ -1,7 +1,7 @@
 "use strict";
 
 var util = require("substance-util");
-var SRegExp = require("substance-regexp");
+var SRegExp = util.RegExp;
 
 // Substance.Application.ElementRenderer
 // ==========================================================================
@@ -15,11 +15,11 @@ var ElementRenderer = function(attributes) {
   // Pull off preserved properties from attributes
   // --------
 
-  this.tagName = attributes.tag;  
+  this.tagName = attributes.tag;
   this.children = attributes.children || [];
   this.text = attributes.text || "";
   this.html = attributes.html;
-  
+
   delete attributes.children;
   delete attributes.text;
   delete attributes.html;
@@ -39,7 +39,7 @@ ElementRenderer.Prototype = function() {
     if (this.html) {
       el.innerHTML = this.html;
     } else {
-      el.textContent = this.text;  
+      el.textContent = this.text;
     }
 
     // Set attributes based on element spec
@@ -95,7 +95,7 @@ var $$ = function(descriptor, options) {
       return m.match[1];
     }).join(' ');
   }
-  
+
   return new ElementRenderer(options);
 };
 

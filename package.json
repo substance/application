@@ -1,5 +1,6 @@
 {
   "name": "substance-application",
+  "version": "0.2.0",
   "description": "Create Substance apps using Views, Controllers and Modules.",
   "url": "http://github.com/substance/application",
   "keywords": [
@@ -16,9 +17,8 @@
   },
   "dependencies": {
     "underscore": "1.5.x",
-    "substance-regexp": "git+https://github.com/substance/regexp.git#lens"
+    "substance-util": "git+https://github.com/substance/util.git#lens"
   },
-  "version": "0.2.0",
   "engines": {
     "node": ">=0.8.x",
     "npm": ">=1.1.x"
