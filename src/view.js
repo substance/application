@@ -63,6 +63,8 @@ View.Prototype = function() {
       // Event bubbles up if there is no handler
       var method = that[fnCall.method];
       if (method) {
+        e.stopPropagation();
+        e.preventDefault();
         method.apply(that, fnCall.args);
         return false;
       }
