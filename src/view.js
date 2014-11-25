@@ -54,6 +54,7 @@ View.Prototype = function() {
     }
 
     this.$el.delegate('[sbs-click]', 'click', function(e) {
+      console.error("FIXME: sbs-click is deprecated. Use jquery handlers with selectors instead.");
 
       // Matches things like this
       // showReport(foo) => ["showReport(foo)", "showReport", "foo"]
