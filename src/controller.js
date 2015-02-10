@@ -62,6 +62,10 @@ Controller.Prototype = function() {
   };
 
   this.switchState = function(state, options, cb) {
+    // Just to be save let's make a deep copy of the new state provided,
+    // because it could share references with oldState
+    state = JSON.parse(JSON.stringify(state));
+
     if (!cb && _.isFunction(options)) cb = options;
     var self = this;
 

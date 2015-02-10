@@ -63,6 +63,10 @@ Application.Prototype = function() {
   };
 
   this.switchState = function(appState, options, cb) {
+    // Just to be save let's make a deep copy of the new state provided,
+    // because it could share references with oldState
+    appState = JSON.parse(JSON.stringify(appState));
+
     var self = this;
     options = _.extend({}, DEFAULT_SWITCH_OPTIONS, options || {});
 
