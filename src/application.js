@@ -173,7 +173,7 @@ Application.Prototype = function() {
         }
         // Note: currently only String variables are allowed as state variables
         if (!_.isString(val)) {
-          console.error("Only String state variables are allowed");
+          console.error("Only String state variables are allowed:", key, " is ", val);
           continue;
         }
         stateParams.push(i+"."+key+"="+val);
