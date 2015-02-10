@@ -134,7 +134,10 @@ Application.Prototype = function() {
     for (i=0; i<values.length; i++) {
       var item = values[i];
       var data = state[item.state];
-      data[item.key] = item.value;
+      var valAsString = item.value;
+      valAsString = window.decodeURIComponent(valAsString);
+      var val = JSON.parse(valAsString);
+      data[item.key] = val;
     }
 
     return state;
@@ -165,17 +168,15 @@ Application.Prototype = function() {
     for (var i = 0; i < appState.length; i++) {
       var s = appState[i];
       if (!s) continue;
-      stateIds.push(s.id);
+      var stateId = s.id || 'default';
+      stateIds.push(stateId);
       for (var key in s) {
-        var val = s[key];
         if (key === "id" || key === "__id__" || key === "options") {
           continue;
         }
         // Note: currently only String variables are allowed as state variables
-        if (!_.isString(val)) {
-          console.error("Only String state variables are allowed");
-          continue;
-        }
+        var valAsString = JSON.stringify(s[key]);
+        var val = window.encodeURIComponent(valAsString);
         stateParams.push(i+"."+key+"="+val);
       }
     }
