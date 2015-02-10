@@ -15,12 +15,7 @@
     "url": "https://github.com/substance/application.git"
   },
   "dependencies": {
-    "underscore": "1.5.x",
-    "esprima": "1.0.x",
-    "escodegen": "0.0.x",
-    "estraverse": "0.0.x",
-    "MD5": "1.0.x",
-    "resolve": "0.3.x",
+    "underscore": "*",
     "substance-regexp": "git+https://github.com/substance/regexp.git#master"
   },
   "version": "0.2.0",

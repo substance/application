@@ -14,7 +14,7 @@ var Controller = function() {
   this.changeListener = null;
 
   // the state is represented by a unique name
-  this.state = null;
+  this.state = {id: "uninitialized"};
 
   // Each controller can have a single (active) child controller
   this.__childController__ = null;
@@ -35,7 +35,7 @@ Controller.Prototype = function() {
   this.dispose = function() {
     if (this.__childController__) this.__childController__.dispose();
     this.__childController__ = null;
-    this.state = null;
+    this.state = {id: "uninitialized"};
   };
 
   // State transition
