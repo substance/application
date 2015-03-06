@@ -1,14 +1,13 @@
 "use strict";
 
-var Application = require("./src/application");
-Application.View = require("./src/view");
-Application.Controller = require("./src/controller");
+
+var Application = {};
 
 if (typeof window !== 'undefined') {
-  Application.Router = require("./src/router");
-  Application.DefaultRouter = require("./src/default_router");
-  Application.ElementRenderer = require("./src/renderers/element_renderer");
-  Application.$$ = Application.ElementRenderer.$$;
+	Application = require("./src/application");
+	Application.Component = require("./src/component");
+  Application.Element = require("./src/element");
+  Application.$$ = Application.Element.create;
 }
 
 module.exports = Application;

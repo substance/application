@@ -1,28 +1,143 @@
 "use strict";
 
-var View = require("./view");
 var util = require("substance-util");
 var _ = require("underscore");
+var $$ = require("./element").create;
 
 // Substance.Application
 // ==========================================================================
 //
 // Application abstraction suggesting strict MVC
 
-// TODO: does this really need to be a View?
-// It would be better to have controller to create view which
-// is used has top level view.
-var Application = function(config) {
-  View.call(this);
 
-  this.config = config || {};
-  this.__controller__ = null;
+// TODOS: 
+// Ownership
+//   - we don't maintain ownership of child components
+//   - we need to track this so we can make a cleanup on rerender
+//   - e.g. one components state changes so different components will be created
+//   - we first need to unregister (dispose) existing sub-components
+//   - we need to restructure the rendering method, so we have a reference to the parent component
+//     when we iterate over the child components
+//   - `renderElement` should have a parameter `parent` that is the owning component
+
+var Application = function(options) {
+  this.config = options.config;
+
+  // Keeps track of all (mounted?) components
+  this.components = {};
 };
+
 
 Application.Prototype = function() {
 
-  this.setRouter = function(router) {
-    this.router = router;
+  this.renderDOMElement = function(tagName, attrs) {
+    var el = window.document.createElement(tagName);
+
+    if (attrs.html) {
+      el.innerHTML = attrs.html;
+      delete attrs.html;
+    }
+    if (attrs.text) {
+      el.textContent = attrs.text;
+      delete attrs.text;
+    }
+
+    // Set attributes based on element spec
+    for(var attrName in attrs) {
+      var val = attrs[attrName];
+      el.setAttribute(attrName, val);
+    }
+    return el;
+  }
+
+  // Mount component
+  // ----------
+  //
+  // Terminology of 'mount'. This only means the component has now a DOM representatation,
+  // which can be accessed using Component.getDOMNode()
+
+  this.mountComponent = function(comp, domEl) {
+    var ref = comp.ref;
+    if (!ref) throw new Error("Component does not have a ref, and can not be mounted");
+    this.components[ref] = comp;
+    // Assign app instance to the component
+    comp.app = this;
+    comp.el = domEl;
+    if (comp.componentDidMount) {
+      comp.componentDidMount();
+    }
+  };
+
+  // Component state has changed
+  // Re-render component (=subtree)
+  this.updateComponent = function(comp) {
+    var el = comp.render();
+
+    // How can we 
+    var domEl = this.renderElement(el);
+
+    // Replace element
+    comp.el.parentNode.replaceChild(domEl, comp.el);
+
+    // Event handlers need to be attached again
+    // This is a bit nasty, actually a component shouldn't be mounted multiple times
+    // in the life cycle
+    // We need a declarative approach for dom events and use event delegation
+    // on the app level
+    if (comp.componentDidMount) {
+      comp.componentDidMount();
+    }
+  };
+
+
+  // Render component
+  // ----------
+  //
+  // 1) Takes a component class and properties as an input
+  // 2) Creates a component instance 
+  // 3) Sets component state if available in app state
+  // 4) Render component to a DOM element
+  // 5) Register component in this.components
+
+  this.renderComponent = function(componentClass, props) {
+    var comp = new componentClass(props);
+    
+    if (comp.getInitialState) {
+      comp.state = comp.getInitialState();
+    }
+    // TODO: set state based on appstate (routes)
+
+    var element = comp.render();
+    var domEl = this.renderElement(element);
+    
+    this.mountComponent(comp, domEl);
+    
+    return domEl;
+  };
+
+  // Render Element specification
+  // ----------
+  //
+  // Checks wether the element is a DOMElement spec or
+  // Substance Component and 
+
+  this.renderElement = function(el) {
+    var domEl;
+
+    if (_.isString(el.type)) {
+      domEl = this.renderDOMElement(el.type, el.props);
+    } else {
+      domEl = this.renderComponent(el.type, el.props);
+    }
+
+    // Render children
+    for (var i = 0; i < el.children.length; i++) {
+      var child = el.children[i];
+      var childDomEl = this.renderElement(child);
+      domEl.appendChild(childDomEl);
+    };
+
+    return domEl;
   };
 
   // Start Application
@@ -30,184 +145,21 @@ Application.Prototype = function() {
   //
 
   this.start = function(options) {
-    // NOTE: we have to import jquery this way as this class is used also used in a node context
-    var $ = window.$;
+    console.log('starting app..');
 
-    options = options || {};
-    // First setup the top level view
-    if (options.el) {
-      this.el = options.el;
-      this.$el = $(this.el);
-    } else {
-      // Defaults to body element
-      this.$el = $('body');
-      this.el = this.$el[0];
-    }
-
-    if (this.initialize) this.initialize();
-    if (this.render) this.render();
-
-    // Now the normal app lifecycle can begin
-    // Because app state changes require the main view to be present
-    // Triggers an initial app state change according to url hash fragment
-    if (this.router) this.router.start();
+    // wrap root component in an element to fulfill rendering API
+    var rootElement = $$(this.rootComponent, {ref: "root"});
+    
+    var domEl = this.renderElement(rootElement);
+    
+    console.log("EL", this.el);
+    console.log('dom raedy', domEl);
+    this.el.innerHTML = "";
+    this.el.appendChild(domEl);
   };
 
-  // Switches the application state
-  // --------
-  // appState: a list of state objects
-
-  var DEFAULT_SWITCH_OPTIONS = {
-    updateRoute: true,
-    replace: false
-  };
-
-  this.switchState = function(appState, options, cb) {
-    var self = this;
-    options = _.extend({}, DEFAULT_SWITCH_OPTIONS, options || {});
-
-    // keep the old state for afterTransition-handler
-    var oldAppState = this.getState();
-
-    this.controller.__switchState__(appState, options, function(error) {
-      if (error) {
-        if (cb) {
-          cb(error);
-        } else {
-          console.error(error.message);
-          util.printStackTrace(error);
-        }
-        return;
-      }
-      if (options["updateRoute"]) {
-        self.updateRoute(options);
-      }
-
-      if (self.afterTransition) {
-        try {
-          self.afterTransition(appState, oldAppState);
-        } catch (err) {
-          if (cb) {
-            cb(err);
-          } else {
-            console.error(err.message);
-            util.printStackTrace(err);
-          }
-          return;
-        }
-      }
-
-      if (cb) cb(null);
-    });
-  };
-
-  this.stateFromFragment = function(fragment) {
-    function _createState(stateNames) {
-      var state = [];
-      for (var i = 0; i < stateNames.length; i++) {
-        state.push({id: stateNames[i]});
-      }
-      return state;
-    }
-
-    var state;
-    var params = fragment.split(";");
-
-    var i, pair;
-    var values = [];
-    for (i=0; i<params.length; i++) {
-      pair = params[i].split("=");
-      var key = pair[0];
-      var val = pair[1];
-      if (!key || val === undefined) {
-        continue;
-      }
-      if (key === "state") {
-        var stateNames = val.split(".");
-        state = _createState(stateNames);
-      } else {
-        pair = key.split(".");
-        values.push({state: pair[0], key: pair[1], value: val});
-      }
-    }
-
-    for (i=0; i<values.length; i++) {
-      var item = values[i];
-      var data = state[item.state];
-      data[item.key] = item.value;
-    }
-
-    return state;
-  };
-
-  this.getState = function() {
-    if (!this.controller.state) return null;
-
-    var appState = [];
-    var controller = this.controller;
-    while(controller) {
-      appState.push(controller.state);
-      controller = controller.childController;
-    }
-    return appState;
-  };
-
-  this.updateRoute = function(options) {
-    if (!this.router && !this.config["headless"]) {
-      throw new Error("Application.updateRoute(): application has no router.");
-    }
-
-    options = options || {};
-
-    var appState = this.getState();
-    var stateIds = [];
-    var stateParams = [];
-    for (var i = 0; i < appState.length; i++) {
-      var s = appState[i];
-      if (!s) continue;
-      stateIds.push(s.id);
-      for (var key in s) {
-        var val = s[key];
-        if (key === "id" || key === "__id__" || key === "options") {
-          continue;
-        }
-        // Note: currently only String variables are allowed as state variables
-        if (!_.isString(val)) {
-          console.error("Only String state variables are allowed");
-          continue;
-        }
-        stateParams.push(i+"."+key+"="+val);
-      }
-    }
-    var stateString = "state="+stateIds.join(".") + ";" + stateParams.join(";");
-    this.router.navigate(stateString, {trigger: false, replace: options.replace});
-  };
-
-  // Called by a sub controller when a sub-state has been changed
-  this.stateChanged = function(controller, oldState, options) {
-    if (options["updateRoute"]) {
-      this.updateRoute(options);
-    }
-  };
-
-  this.sendError = function(err) {
-    throw err;
-  };
 };
 
-Application.Prototype.prototype = View.prototype;
 Application.prototype = new Application.Prototype();
-
-// TODO: this is dangerous as it obscures the underlying mechanism.
-// Try to switch to a more explicit approach.
-Object.defineProperty(Application.prototype, "controller", {
-  set: function(controller) {
-    controller.setChangeListener(this);
-    this.__controller__ = controller;
-  },
-  get: function() {
-    return this.__controller__;
-  }
-});
 
 module.exports = Application;
