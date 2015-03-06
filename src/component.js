@@ -1,6 +1,7 @@
 "use strict";
 
 var util = require("substance-util");
+var _ = require("underscore");
 
 // Substance.Application.Component
 // ==========================================================================

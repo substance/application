@@ -42,6 +42,11 @@ Application.Prototype = function() {
       delete attrs.text;
     }
 
+    if (attrs.className) {
+      el.setAttribute("class", attrs.className);
+      delete attrs.className;
+    }
+
     // Set attributes based on element spec
     for(var attrName in attrs) {
       var val = attrs[attrName];
