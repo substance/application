@@ -12,10 +12,17 @@ var Component = function(props) {
   // Either use the provided element or make up a new element
   this.props = props;
   this.ref = props.ref || util.uuid();
+
+  // Remember childcomponents (managed by this instance)
+  this.childComponents = [];
 };
 
 Component.Prototype = function() {
 	
+	this.getId = function() {
+		return this._mountPath.join(".");
+	};
+
 	this.getDOMNode = function() {
 		return this.el;
 	};
@@ -33,7 +40,12 @@ Component.Prototype = function() {
 
   this.render = function() {
     throw new Error("render method must be defined!");
-  }
+  };
+
+  // Calls render and assigns to .el
+  this._render = function() {
+
+  };
 
 };
 
