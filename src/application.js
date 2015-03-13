@@ -9,15 +9,8 @@ var $$ = require("./element").create;
 //
 // Application abstraction suggesting strict MVC
 
-// TODOS: 
-// Ownership (no cleanup is happening)
-//   - we don't maintain ownership of child components
-//   - we need to track this so we can make a cleanup on rerender
-//   - e.g. one components state changes so different components will be created
-//   - we first need to unregister (dispose) existing sub-components
-//   - we need to restructure the rendering method, so we have a reference to the parent component
-//     when we iterate over the child components
-//   - `renderElement` should have a parameter `parent` that is the owning component
+// TODOS:
+// 
 // Assign state from url fragment, and serialize
 
 var Application = function(options) {
@@ -36,7 +29,7 @@ Application.Prototype = function() {
     _.each(comp.childComponents, function(comp, key) {
       this.clearComponent(comp);
       // Remove from comp registry
-      console.log('removing', comp.id, 'from registry');
+      console.log('unregistering', comp.id);
       delete this.components[comp.id];
     }, this);
 
@@ -166,13 +159,12 @@ Application.Prototype = function() {
     if (comp.getInitialState) {
       // Set initial state, which is an async operation, component gets re-rendered
       // after everything is there
-      // debugger;
 
       // Hack, ensure we make initial state transition after component has been injected
       // into the DOM
       _.delay(function() {
         comp.setState(comp.getInitialState(), {updateRoute: false, replace: false});
-      }, 500);
+      }, 1);
     }
 
     return domEl;
