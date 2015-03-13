@@ -36,12 +36,14 @@ Application.Prototype = function() {
     _.each(comp.childComponents, function(comp, key) {
       this.clearComponent(comp);
       // Remove from comp registry
-      delete this.components[comp.ref];
+      console.log('removing', comp.id, 'from registry');
+      delete this.components[comp.id];
     }, this);
 
     // ditch child component references
     comp.childComponents = [];
   };
+
 
   // Component state has changed
   // Re-render component (=subtree)
@@ -57,16 +59,7 @@ Application.Prototype = function() {
     // Replace element
     comp.el.parentNode.replaceChild(domEl, comp.el);
     // Reassign comp.el
-    comp.el = domEl;
-
-    // Event handlers need to be attached again
-    // This is a bit nasty, actually a component shouldn't be mounted multiple times
-    // in the life cycle
-    // We need a declarative approach for dom events and use event delegation
-    // on the app level
-    if (comp.componentDidMount) {
-      comp.componentDidMount();
-    }
+    comp.mount(this, domEl);
   };
 
   this.renderDOMElement = function(tagName, attrs) {
@@ -101,15 +94,12 @@ Application.Prototype = function() {
   // which can be accessed using Component.getDOMNode()
 
   this.mountComponent = function(comp, domEl) {
-    var ref = comp.ref;
-    if (!ref) throw new Error("Component does not have a ref, and can not be mounted");
-    this.components[ref] = comp;
+    var compId = comp.id;
+    if (!compId) throw new Error("Component does not have an id, and can not be mounted");
+    this.components[compId] = comp;
     // Assign app instance to the component
-    comp.app = this;
-    comp.el = domEl;
-    if (comp.componentDidMount) {
-      comp.componentDidMount();
-    }
+    // comp.app = this;
+    comp.mount(this, domEl);
   };
 
   // determineComponentId
@@ -139,7 +129,6 @@ Application.Prototype = function() {
   // 3) Sets component state if available in app state
 
   this.createComponent = function(componentClass, props, owner) {
-    
     var comp = new componentClass(props);
 
     // debugger;
@@ -156,7 +145,7 @@ Application.Prototype = function() {
 
     // TODO: set state based on appstate (routes)
     if (comp.getInitialState) {
-      comp.state = comp.getInitialState();
+      // comp.state = comp.getInitialState();
     }
     return comp;
   };
@@ -172,6 +161,20 @@ Application.Prototype = function() {
     var domEl = this.renderElement(element, owner);
     
     this.mountComponent(comp, domEl);
+
+    // TODO: set state based on appstate (routes)
+    if (comp.getInitialState) {
+      // Set initial state, which is an async operation, component gets re-rendered
+      // after everything is there
+      // debugger;
+
+      // Hack, ensure we make initial state transition after component has been injected
+      // into the DOM
+      _.delay(function() {
+        comp.setState(comp.getInitialState(), {updateRoute: false, replace: false});
+      }, 500);
+    }
+
     return domEl;
   };
 
@@ -189,9 +192,10 @@ Application.Prototype = function() {
       domEl = this.renderDOMElement(el.type, el.props);
     } else {
       comp = this.createComponent(el.type, el.props, owner);
-      // console.log('new comp', comp, 'owned by', owner);
 
       owner = comp;
+      // Owner is passed, since we have recursive construciton of subcomponents, which should have
+      // the just created component as an owner
       domEl = this.renderComponent(comp, owner);
     }
 
@@ -214,14 +218,10 @@ Application.Prototype = function() {
   //
 
   this.start = function(options) {
-    console.log('starting app..');
-
     // wrap root component in an element to fulfill rendering API
-    var rootElement = $$(this.rootComponent, {ref: "root"});
-    var domEl = this.renderElement(rootElement);
-    
-    console.log("EL", this.el);
-    console.log('dom raedy', domEl);
+    // var rootElement = $$(this.rootComponent, {ref: "root"});
+    var domEl = this.renderElement(this.rootElement);
+        
     this.el.innerHTML = "";
     this.el.appendChild(domEl);
   };
