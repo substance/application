@@ -51,13 +51,19 @@ Element.create = function() {
     el = new Element(tagName, attrs);
   }
 
-  for (var i = 2; i < arguments.length; i++) {
-    var childEl = arguments[i];
-    // if (_.isString(childEl)) {
-    //   childEl = window.document.createTextNode(childEl);
-    // }
+  // 3. Handle children (either passed as argument list or array)
+  var children;
+  if (_.isArray(arguments[2])) {
+    children = arguments[2];
+  } else {
+    children = _.rest(arguments, 2);
+  }
+
+  for (var i = 0; i < children.length; i++) {
+    var childEl = children[i];
     el.appendChild(childEl);
   }
+
 
   return el;
 };
