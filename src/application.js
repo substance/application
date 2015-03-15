@@ -29,7 +29,7 @@ Application.Prototype = function() {
     _.each(comp.childComponents, function(comp, key) {
       this.clearComponent(comp);
       // Remove from comp registry
-      console.log('unregistering', comp.id);
+      // console.log('unregistering', comp.id);
       delete this.components[comp.id];
     }, this);
 
