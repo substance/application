@@ -2,7 +2,8 @@
 
 var util = require("substance-util");
 var _ = require("underscore");
-var $$ = require("./element").create;
+var Element = require("./element");
+var $$ = Element.create;
 
 // Substance.Application
 // ==========================================================================
@@ -179,6 +180,10 @@ Application.Prototype = function() {
   this.renderElement = function(el, owner) {
     var domEl;
     var comp;
+
+    if (!(el instanceof Element)) {
+      throw new Error("el param needs to be of type Element");
+    }
 
     if (_.isString(el.type)) {
       domEl = this.renderDOMElement(el.type, el.props);

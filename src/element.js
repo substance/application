@@ -61,6 +61,9 @@ Element.create = function() {
 
   for (var i = 0; i < children.length; i++) {
     var childEl = children[i];
+    if (!(childEl instanceof Element)) {
+      throw new Error("child element is not of type Element");
+    }
     el.appendChild(childEl);
   }
 
