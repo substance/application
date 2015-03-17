@@ -45,18 +45,23 @@ Component.Prototype = function() {
   // important for async case
   // to transition from uninitialized state to initial state
   this.initialize = function(cb) {
-    if (this.getInitialState) {
-      // Set initial state, which is an async operation, component gets re-rendered
-      // after everything is there
+    // console.log('initialize called');
+    var that = this;
 
-      // Hack, ensure we make initial state transition after component has been injected
-      // into the DOM
-      // _.delay(function() {
-      this.setState(this.getInitialState(), {updateRoute: false, replace: false}, cb);
-      // }, 500);
-    } else {
-      this.setState({id: "initialized"}, {updateRoute: false, replace: false}, cb);
-    }
+    // Delay makes sure this doesn't interfer with initial rendering!
+    _.delay(function() {
+      if (that.getInitialState) {
+        // Set initial state, which is an async operation, component gets re-rendered
+        // after everything is there
+        that.setState(that.getInitialState(), {updateRoute: false, replace: false}, cb);
+      } else {
+        // we don't need a real transition here since we are stateless
+        // that.state.id = "initialized";
+        // cb(null);
+        that.setState({id: "initialized"}, {updateRoute: false, replace: false}, cb);
+      }
+    }, 1);
+
   };
 
 	// Rendering

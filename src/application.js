@@ -169,19 +169,6 @@ Application.Prototype = function() {
     var domEl = this.renderElement(element, owner);
     this.mountComponent(comp, domEl);
     return domEl;
-
-    // TODO: set state based on appstate (routes)
-    // if (comp.getInitialState) {
-    //   // Set initial state, which is an async operation, component gets re-rendered
-    //   // after everything is there
-
-    //   // Hack, ensure we make initial state transition after component has been injected
-    //   // into the DOM
-    //   _.delay(function() {
-    //     comp.setState(comp.getInitialState(), {updateRoute: false, replace: false});
-    //   }, 500);
-    // }
-
   };
 
   // Render Element specification
