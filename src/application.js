@@ -47,7 +47,7 @@ Application.Prototype = function() {
     // Remove all child views of subcomponent
     this.clearComponent(comp);
 
-    // How can we 
+    // Re-render
     var domEl = this.renderElement(el, comp);
 
     // Replace element
@@ -125,7 +125,6 @@ Application.Prototype = function() {
   this.createComponent = function(componentClass, props, owner) {
     var comp = new componentClass(props);
 
-    // debugger;
     comp._mountPath = this.determineMountPath(owner);
 
     // console.log('creating component', props.ref, "mounted at", comp._mountPath);
@@ -138,9 +137,14 @@ Application.Prototype = function() {
     comp._owner = owner;
 
     // TODO: set state based on appstate (routes)
-    if (comp.getInitialState) {
-      // comp.state = comp.getInitialState();
-    }
+    // if (comp.getInitialState) {
+    //   // comp.state = comp.getInitialState();
+    // }
+
+    comp.initialize(function(err) {
+      console.log('comp has been initialized', comp);
+    });
+
     return comp;
   };
 
@@ -151,24 +155,29 @@ Application.Prototype = function() {
   // Mount component into DOM
 
   this.renderComponent = function(comp, owner) {
-    var element = comp.render();
-    var domEl = this.renderElement(element, owner);
-    
-    this.mountComponent(comp, domEl);
-
-    // TODO: set state based on appstate (routes)
-    if (comp.getInitialState) {
-      // Set initial state, which is an async operation, component gets re-rendered
-      // after everything is there
-
-      // Hack, ensure we make initial state transition after component has been injected
-      // into the DOM
-      _.delay(function() {
-        comp.setState(comp.getInitialState(), {updateRoute: false, replace: false});
-      }, 1);
+    var element;
+    if (comp.isInitialized()) {
+      element = comp.render();
+    } else {
+      element = comp.renderUninitialized();
     }
 
+    var domEl = this.renderElement(element, owner);
+    this.mountComponent(comp, domEl);
     return domEl;
+
+    // TODO: set state based on appstate (routes)
+    // if (comp.getInitialState) {
+    //   // Set initial state, which is an async operation, component gets re-rendered
+    //   // after everything is there
+
+    //   // Hack, ensure we make initial state transition after component has been injected
+    //   // into the DOM
+    //   _.delay(function() {
+    //     comp.setState(comp.getInitialState(), {updateRoute: false, replace: false});
+    //   }, 500);
+    // }
+    
   };
 
   // Render Element specification
@@ -189,7 +198,6 @@ Application.Prototype = function() {
       domEl = this.renderDOMElement(el.type, el.props);
     } else {
       comp = this.createComponent(el.type, el.props, owner);
-
       owner = comp;
       // Owner is passed, since we have recursive construciton of subcomponents, which should have
       // the just created component as an owner

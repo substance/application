@@ -2,6 +2,7 @@
 
 var util = require("substance-util");
 var _ = require("underscore");
+var $$ = require("./element").create;
 
 // Substance.Application.Component
 // ==========================================================================
@@ -28,6 +29,10 @@ var Component = function(props) {
 
 Component.Prototype = function() {
 
+  this.isInitialized = function() {
+    return this.state.id !== "uninitialized";
+  };
+
 	this.getId = function() {
 		return this._mountPath.join(".");
 	};
@@ -35,6 +40,24 @@ Component.Prototype = function() {
 	this.getDOMNode = function() {
 		return this.el;
 	};
+
+  // Component gets initialized
+  // important for async case
+  // to transition from uninitialized state to initial state
+  this.initialize = function(cb) {
+    if (this.getInitialState) {
+      // Set initial state, which is an async operation, component gets re-rendered
+      // after everything is there
+
+      // Hack, ensure we make initial state transition after component has been injected
+      // into the DOM
+      // _.delay(function() {
+      this.setState(this.getInitialState(), {updateRoute: false, replace: false}, cb);
+      // }, 500);
+    } else {
+      this.setState({id: "initialized"}, {updateRoute: false, replace: false}, cb);
+    }
+  };
 
 	// Rendering
 	// ------------
@@ -178,6 +201,10 @@ Component.Prototype = function() {
   // 		$$(Locations, {locations: ["loc1", "loc2"]})
   // 	)
   // };
+
+  this.renderUninitialized = function() {
+    return $$('div', {className: 'loading'});
+  };
 
   this.render = function() {
     throw new Error("render method must be defined!");
