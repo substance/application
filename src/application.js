@@ -136,13 +136,8 @@ Application.Prototype = function() {
     // Set ownership
     comp._owner = owner;
 
-    // TODO: set state based on appstate (routes)
-    // if (comp.getInitialState) {
-    //   // comp.state = comp.getInitialState();
-    // }
-
     comp.initialize(function(err) {
-      console.log('comp has been initialized', comp);
+      // console.log('comp has been initialized', comp);
     });
 
     return comp;
