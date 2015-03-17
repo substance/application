@@ -1,9 +1,7 @@
 "use strict";
 
-var util = require("substance-util");
 var _ = require("underscore");
 var Element = require("./element");
-var $$ = Element.create;
 
 // Substance.Application
 // ==========================================================================
@@ -11,11 +9,12 @@ var $$ = Element.create;
 // Application abstraction suggesting strict MVC
 
 // TODOS:
-// 
+//
 // Assign state from url fragment, and serialize
 
 var Application = function(options) {
   this.config = options.config;
+  this.componentRegistry = options.components;
 
   // Keeps track of all (mounted?) components
   this.components = {};
@@ -27,7 +26,7 @@ Application.Prototype = function() {
   // Remove all child components
 
   this.clearComponent = function(comp) {
-    _.each(comp.childComponents, function(comp, key) {
+    _.each(comp.childComponents, function(comp) {
       this.clearComponent(comp);
       // Remove from comp registry
       // console.log('unregistering', comp.id);
@@ -37,7 +36,6 @@ Application.Prototype = function() {
     // ditch child component references
     comp.childComponents = [];
   };
-
 
   // Component state has changed
   // Re-render component (=subtree)
@@ -51,7 +49,9 @@ Application.Prototype = function() {
     var domEl = this.renderElement(el, comp);
 
     // Replace element
-    comp.el.parentNode.replaceChild(domEl, comp.el);
+    if (comp.el) {
+      comp.el.parentNode.replaceChild(domEl, comp.el);
+    }
     // Reassign comp.el
     comp.mount(this, domEl);
   };
@@ -79,7 +79,7 @@ Application.Prototype = function() {
       el.setAttribute(attrName, val);
     }
     return el;
-  }
+  };
 
   // Mount component
   // ----------
@@ -91,14 +91,12 @@ Application.Prototype = function() {
     var compId = comp.id;
     if (!compId) throw new Error("Component does not have an id, and can not be mounted");
     this.components[compId] = comp;
-    // Assign app instance to the component
-    // comp.app = this;
     comp.mount(this, domEl);
   };
 
   // determineComponentId
   // ----------
-  // 
+  //
   // Every constructed component gets a unique id based on where it is located in the DOM
   // 0 - root component
   // 0.1 - first mounted children of root
@@ -119,12 +117,12 @@ Application.Prototype = function() {
   // ----------
   //
   // 1) Takes a component class and properties as an input
-  // 2) Creates a component instance 
+  // 2) Creates a component instance
   // 3) Sets component state if available in app state
 
-  this.createComponent = function(componentClass, props, owner) {
-    var comp = new componentClass(props);
-
+  this.createComponent = function(ComponentClass, props, owner) {
+    var comp = new ComponentClass(props);
+    comp.app = this;
     comp._mountPath = this.determineMountPath(owner);
 
     // console.log('creating component', props.ref, "mounted at", comp._mountPath);
@@ -132,15 +130,26 @@ Application.Prototype = function() {
     if (owner) {
       owner.childComponents.push(comp);
     }
-    
+
     // Set ownership
     comp._owner = owner;
 
     comp.initialize(function(err) {
-      // console.log('comp has been initialized', comp);
+      if (err) {
+        console.error(err);
+      } else {
+        // console.log('comp has been initialized', comp);
+      }
     });
 
     return comp;
+  };
+
+  this.lookupComponentClass = function(name) {
+    if (!this.componentRegistry[name]) {
+      throw new Error('No component registered for name ' + name);
+    }
+    return this.componentRegistry[name];
   };
 
   // Render component
@@ -172,14 +181,14 @@ Application.Prototype = function() {
     //     comp.setState(comp.getInitialState(), {updateRoute: false, replace: false});
     //   }, 500);
     // }
-    
+
   };
 
   // Render Element specification
   // ----------
   //
   // Checks wether the element is a DOMElement spec or
-  // Substance Component and 
+  // Substance Component and
 
   this.renderElement = function(el, owner) {
     var domEl;
@@ -201,14 +210,14 @@ Application.Prototype = function() {
 
     // Process children
     // -------------
-    //     
+    //
 
     // Create child elements
     for (var i = 0; i < el.children.length; i++) {
       var child = el.children[i];
       var childDomEl = this.renderElement(child, owner);
       domEl.appendChild(childDomEl);
-    };
+    }
 
     return domEl;
   };
@@ -217,11 +226,11 @@ Application.Prototype = function() {
   // ----------
   //
 
-  this.start = function(options) {
+  this.start = function() {
     // wrap root component in an element to fulfill rendering API
     // var rootElement = $$(this.rootComponent, {ref: "root"});
     var domEl = this.renderElement(this.rootElement);
-        
+
     this.el.innerHTML = "";
     this.el.appendChild(domEl);
   };
