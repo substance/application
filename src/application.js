@@ -141,10 +141,8 @@ Application.Prototype = function() {
 
       // Set initial state (on construction)
       comp.state = comp.getInitialState();
-      console.log('state', comp.state);
 
       comp.app = this;
-
 
       comp._mountPath = this.determineMountPath(owner);
 

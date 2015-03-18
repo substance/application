@@ -10,15 +10,6 @@ var $$ = require("./element").create;
 // Application Component abstraction, inspired by React.js
 
 var Component = function() {
-  // Either use the provided element or make up a new element
-  // this.props = props || {};
-  // this.id = props.ref || util.uuid();
-
-  // // Should exist in addition to id, so components or dom elements can be referenced more easily
-  // // e.g. in event handlers you can use `this.refs.inputForm`.
-  // this.ref = props.ref || util.uuid();
-
-  // this.setProps(props);
   this.props = undefined;
 
   // Default is uninitialized state
@@ -50,8 +41,8 @@ Component.Prototype = function() {
     this.ref = props.ref || util.uuid();
 
     // Check if there's a dirty checker
-    if (this.props && this.checkDirty) {
-      this._dirty = this.checkDirty(this.props, props);  
+    if (this.props && this.shouldComponentUpdate) {
+      this._dirty = this.shouldComponentUpdate(props, this.state);
       // console.log('dirty', this.id, this._dirty);
     } else {
       this._dirty = true;
@@ -71,24 +62,24 @@ Component.Prototype = function() {
   // Component gets initialized
   // important for async case
   // to transition from uninitialized state to initial state
-  this.initialize = function(cb) {
-    // console.log('initialize called');
-    var that = this;
+  // this.initialize = function(cb) {
+  //   // console.log('initialize called');
+  //   var that = this;
 
-    // Delay makes sure this doesn't interfer with initial rendering!
-    _.delay(function() {
-      if (that.getInitialState) {
-        // Set initial state, which is an async operation, component gets re-rendered
-        // after everything is there
-        that.setState(that.getInitialState(), {updateRoute: false, replace: false}, cb);
-      } else {
-        // we don't need a real transition here since we are stateless
-        // that.state.id = "initialized";
-        // cb(null);
-        that.setState({id: "initialized"}, {updateRoute: false, replace: false}, cb);
-      }
-    }, 500);
-  };
+  //   // Delay makes sure this doesn't interfer with initial rendering!
+  //   _.delay(function() {
+  //     if (that.getInitialState) {
+  //       // Set initial state, which is an async operation, component gets re-rendered
+  //       // after everything is there
+  //       that.setState(that.getInitialState(), {updateRoute: false, replace: false}, cb);
+  //     } else {
+  //       // we don't need a real transition here since we are stateless
+  //       // that.state.id = "initialized";
+  //       // cb(null);
+  //       that.setState({id: "initialized"}, {updateRoute: false, replace: false}, cb);
+  //     }
+  //   }, 500);
+  // };
 
 	// Rendering
 	// ------------
@@ -233,9 +224,9 @@ Component.Prototype = function() {
   // 	)
   // };
 
-  this.renderUninitialized = function() {
-    return $$('div', {className: 'loading'});
-  };
+  // this.renderUninitialized = function() {
+  //   return $$('div', {className: 'loading'});
+  // };
 
   this.render = function() {
     throw new Error("render method must be defined!");
