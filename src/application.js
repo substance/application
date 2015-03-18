@@ -28,9 +28,12 @@ Application.Prototype = function() {
   this.clearComponent = function(comp) {
     _.each(comp.childComponents, function(comp) {
       this.clearComponent(comp);
+      
       // Remove from comp registry
-      // console.log('unregistering', comp.id);
-      delete this.components[comp.id];
+      if (!comp.persistent) {
+        // console.log('unregistering', comp.id);
+        delete this.components[comp.id];  
+      }
     }, this);
 
     // ditch child component references
@@ -43,7 +46,7 @@ Application.Prototype = function() {
     var el = comp.render();
 
     // Remove all child views of subcomponent
-    this.clearComponent(comp);
+    // this.clearComponent(comp);
 
     // Re-render
     var domEl = this.renderElement(el, comp);
@@ -88,9 +91,9 @@ Application.Prototype = function() {
   // which can be accessed using Component.getDOMNode()
 
   this.mountComponent = function(comp, domEl) {
-    var compId = comp.id;
-    if (!compId) throw new Error("Component does not have an id, and can not be mounted");
-    this.components[compId] = comp;
+    if (!comp.id) throw new Error("Component does not have an id, and can not be mounted");
+    // if (this.components[comp.id]) throw new Error('Component with id "'+comp.id+'" is already registered');
+    this.components[comp.id] = comp;
     comp.mount(this, domEl);
   };
 
@@ -112,7 +115,6 @@ Application.Prototype = function() {
     return mountPath;
   };
 
-
   // Create component
   // ----------
   //
@@ -121,26 +123,48 @@ Application.Prototype = function() {
   // 3) Sets component state if available in app state
 
   this.createComponent = function(ComponentClass, props, owner) {
-    var comp = new ComponentClass(props);
-    comp.app = this;
-    comp._mountPath = this.determineMountPath(owner);
+    var comp;
 
-    // console.log('creating component', props.ref, "mounted at", comp._mountPath);
+    if (props && this.components[props.id] && ComponentClass.persistent) {
+      // Reuse existing component
+      comp = this.components[props.id];
+      // comp.props = props;
+      comp.setProps(props);
 
-    if (owner) {
-      owner.childComponents.push(comp);
-    }
+      console.log('reusing existing component', comp.id);
+      // console.log('create component of', owner.id);
+    } else {
 
-    // Set ownership
-    comp._owner = owner;
+      comp = new ComponentClass();
+      // Set props
+      comp.setProps(props);
 
-    comp.initialize(function(err) {
-      if (err) {
-        console.error(err);
-      } else {
-        // console.log('comp has been initialized', comp);
+      // Set initial state (on construction)
+      comp.state = comp.getInitialState();
+      console.log('state', comp.state);
+
+      comp.app = this;
+
+
+      comp._mountPath = this.determineMountPath(owner);
+
+      // console.log('creating component', props.ref, "mounted at", comp._mountPath);
+
+      if (owner) {
+        owner.childComponents.push(comp);
       }
-    });
+
+      // Set ownership
+      comp._owner = owner;
+
+      // comp.initialize(function(err) {
+      //   if (err) {
+      //     console.error(err);
+      //   } else {
+      //     // console.log('comp has been initialized', comp);
+      //   }
+      // });
+    }
 
     return comp;
   };
@@ -160,13 +184,21 @@ Application.Prototype = function() {
 
   this.renderComponent = function(comp, owner) {
     var element;
-    if (comp.isInitialized()) {
-      element = comp.render();
-    } else {
-      element = comp.renderUninitialized();
+
+    // If component data is not dirty, we just reuse the existing domNode
+    if (!comp._dirty) {
+      console.log('not dirty, skip render', comp.id);
+      return comp.el;
     }
 
+    // if (comp.isInitialized()) {
+    element = comp.render();
+    // } else {
+    //   element = comp.renderUninitialized();
+    // }
+
     var domEl = this.renderElement(element, owner);
+    comp._dirty = false; // we are no longer dirty after the render
     this.mountComponent(comp, domEl);
     return domEl;
   };
@@ -190,9 +222,7 @@ Application.Prototype = function() {
     } else {
       comp = this.createComponent(el.type, el.props, owner);
       owner = comp;
-      // Owner is passed, since we have recursive construciton of subcomponents, which should have
-      // the just created component as an owner
-      domEl = this.renderComponent(comp, owner);
+      domEl = this.renderComponent(comp, owner);        
     }
 
     // Process children

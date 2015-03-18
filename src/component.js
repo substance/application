@@ -9,18 +9,21 @@ var $$ = require("./element").create;
 //
 // Application Component abstraction, inspired by React.js
 
-var Component = function(props) {
+var Component = function() {
   // Either use the provided element or make up a new element
-  this.props = props || {};
-  this.id = this.props.ref || util.uuid();
+  // this.props = props || {};
+  // this.id = props.ref || util.uuid();
 
-  // Should exist in addition to id, so components or dom elements can be referenced more easily
-  // e.g. in event handlers you can use `this.refs.inputForm`.
-  this.ref = this.props.ref || util.uuid();
+  // // Should exist in addition to id, so components or dom elements can be referenced more easily
+  // // e.g. in event handlers you can use `this.refs.inputForm`.
+  // this.ref = props.ref || util.uuid();
+
+  // this.setProps(props);
+  this.props = undefined;
 
   // Default is uninitialized state
   this.state = {
-    "id": "uninitialized"
+    "id": "main"
   };
 
   // Remember childcomponents (managed by this instance)
@@ -37,9 +40,33 @@ Component.Prototype = function() {
 		return this._mountPath.join(".");
 	};
 
+  this.setProps = function(props) {
+    // Either use the provided element or make up a new element
+    // this.props = props || {};
+    this.id = props.id || props.ref || util.uuid();
+
+    // Should exist in addition to id, so components or dom elements can be referenced more easily
+    // e.g. in event handlers you can use `this.refs.inputForm`.
+    this.ref = props.ref || util.uuid();
+
+    // Check if there's a dirty checker
+    if (this.props && this.checkDirty) {
+      this._dirty = this.checkDirty(this.props, props);  
+      // console.log('dirty', this.id, this._dirty);
+    } else {
+      this._dirty = true;
+    }
+    
+    this.props = props;
+  };
+
 	this.getDOMNode = function() {
 		return this.el;
 	};
+
+  this.getInitialState = function() {
+    return {id: "main"};
+  };
 
   // Component gets initialized
   // important for async case
@@ -60,8 +87,7 @@ Component.Prototype = function() {
         // cb(null);
         that.setState({id: "initialized"}, {updateRoute: false, replace: false}, cb);
       }
-    }, 1);
-
+    }, 500);
   };
 
 	// Rendering
@@ -213,6 +239,12 @@ Component.Prototype = function() {
 
   this.render = function() {
     throw new Error("render method must be defined!");
+  };
+
+  // Explicit rerender requested by the app
+  this.rerender = function () {
+    this._dirty = true;
+    this.app.updateComponent(this);
   };
 
 };
