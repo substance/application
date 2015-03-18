@@ -12,10 +12,8 @@ var $$ = require("./element").create;
 var Component = function() {
   this.props = undefined;
 
-  // Default is uninitialized state
-  this.state = {
-    "id": "main"
-  };
+  // Default is the empty state
+  this.state = {};
 
   // Remember childcomponents (managed by this instance)
   this.childComponents = [];
@@ -23,13 +21,13 @@ var Component = function() {
 
 Component.Prototype = function() {
 
-  this.isInitialized = function() {
-    return this.state.id !== "uninitialized";
-  };
+  // this.isInitialized = function() {
+  //   return this.state.id !== "uninitialized";
+  // };
 
-	this.getId = function() {
-		return this._mountPath.join(".");
-	};
+  this.getId = function() {
+    return this._mountPath.join(".");
+  };
 
   this.setProps = function(props) {
     // Either use the provided element or make up a new element
@@ -51,12 +49,13 @@ Component.Prototype = function() {
     this.props = props;
   };
 
-	this.getDOMNode = function() {
-		return this.el;
-	};
+  this.getDOMNode = function() {
+    return this.el;
+  };
 
+  // Default initial state is the empty state
   this.getInitialState = function() {
-    return {id: "main"};
+    return {};
   };
 
   // Component gets initialized
@@ -81,16 +80,16 @@ Component.Prototype = function() {
   //   }, 500);
   // };
 
-	// Rendering
-	// ------------
+  // Rendering
+  // ------------
 
-	// Mount component to DOM element
-	// This is done each time after render by Application instance
-	this.mount = function(app, domEl) {
-		this.app = app;
-		this.el = domEl;
-		
-		this.el.setAttribute("data-comp-id", this.getId());
+  // Mount component to DOM element
+  // This is done each time after render by Application instance
+  this.mount = function(app, domEl) {
+    this.app = app;
+    this.el = domEl;
+    
+    this.el.setAttribute("data-comp-id", this.getId());
     // Event handlers need to be attached again, which should be done by user in 
     // this.componentDidMount
     // This is a bit nasty, actually a component shouldn't be mounted multiple times
@@ -100,9 +99,9 @@ Component.Prototype = function() {
     if (this.componentDidMount) {
       this.componentDidMount();
     }
-	};
+  };
 
-	// State transition
+  // State transition
   // ----
   // 
   // A typical transition implementation consists of 3 blocks:
@@ -127,17 +126,17 @@ Component.Prototype = function() {
   };
 
 
-	this.afterTransition = function() {
-		// Triggers a re-render (but this is done on app level)
-		this.app.updateComponent(this);
-	};
+  this.afterTransition = function(prevState) {
+    // Triggers a re-render (but this is done on app level)
+    this.app.updateComponent(this);
+  };
 
 
   // User sets a new component state
   // ----------
   //
 
-	this.setState = function(state, options, cb) {
+  this.setState = function(state, options, cb) {
     if (!cb && _.isFunction(options)) cb = options;
     var self = this;
 
@@ -165,7 +164,7 @@ Component.Prototype = function() {
   };
 
 
-	this.__setState__ = function(state, options, cb) {
+  this.__setState__ = function(state, options, cb) {
     var self = this;
 
     cb = cb || function(err) {
@@ -183,11 +182,16 @@ Component.Prototype = function() {
 
     var _afterTransition = function() {
       if (!_skipped) {
-        // var oldState = self.state;
+        var prevState = self.state;
         self.state = state;
-        self.afterTransition(oldState, state);
+
         // clear the options as they should only be valid during transition
-        self.state.options = {};
+        delete self.state.options;
+
+        self.afterTransition(prevState);
+
+        // Notify app about state change change
+        self.app.onStateChanged(self, prevState);
       }
       cb(null);
     };
@@ -219,9 +223,9 @@ Component.Prototype = function() {
   // For example:
   // 
   // this.render = function() {
-  // 	$$('div', {className: "locations"},
-  // 		$$(Locations, {locations: ["loc1", "loc2"]})
-  // 	)
+  //  $$('div', {className: "locations"},
+  //    $$(Locations, {locations: ["loc1", "loc2"]})
+  //  )
   // };
 
   // this.renderUninitialized = function() {

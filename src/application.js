@@ -3,6 +3,8 @@
 var _ = require("underscore");
 var Element = require("./element");
 
+var DefaultRouter = require("./default_router");
+
 // Substance.Application
 // ==========================================================================
 //
@@ -16,10 +18,14 @@ var Application = function(options) {
   this.config = options.config;
   this.componentRegistry = options.components;
 
+  this.router = new DefaultRouter(this);
+
   // Keeps track of all (mounted?) components
   this.components = {};
-};
 
+  // App route based on exposed component states
+  this.route = {};
+};
 
 Application.Prototype = function() {
 
@@ -38,6 +44,45 @@ Application.Prototype = function() {
 
     // ditch child component references
     comp.childComponents = [];
+  };
+
+  this.getComponentStateFromRoute = function(comp) {
+    return this.route[comp.id];
+  };
+
+  this.updateComponentRoute = function(comp) {
+    if (comp.stateToRoute) {
+      this.route[comp.id] = comp.stateToRoute();
+      // TODO: check if valid route has been returned
+      // needs to be a hash with only string keys and values
+      console.log('new route', JSON.stringify(this.route));
+      this.updateRoute();
+    }
+  };
+
+  this.setRoute = function(route) {
+    this.route = route;
+    console.log('Application.setRoute', route);
+  };
+
+  this.updateRoute = function(options) {
+    var routeString = JSON.stringify(this.route);
+    // console.log(stateString);
+
+    this.router.navigate(routeString, {trigger: false, replace: true});
+  };
+
+  this.routeFromFragment = function(fragment) {
+    try {
+      return JSON.parse(fragment);
+    } catch(e) {
+      return {};
+    }
+  };
+
+  this.onStateChanged = function(comp, prevState) {
+    // console.log('comp', comp.id, 'changed state', prevState, 'to', comp.state);
+    this.updateComponentRoute(comp);
   };
 
   // Component state has changed
@@ -140,10 +185,16 @@ Application.Prototype = function() {
       comp.setProps(props);
 
       // Set initial state (on construction)
-      comp.state = comp.getInitialState();
+      var routeState = this.getComponentStateFromRoute(comp);
+      if (routeState) {
+        console.log('APPLYING ROUTE STATE :-)', routeState);
+      }
+      comp.state = routeState || comp.getInitialState();
+
+      // map to browser url if component handles route mapping
+      this.updateComponentRoute(comp);
 
       comp.app = this;
-
       comp._mountPath = this.determineMountPath(owner);
 
       // console.log('creating component', props.ref, "mounted at", comp._mountPath);
@@ -154,14 +205,6 @@ Application.Prototype = function() {
 
       // Set ownership
       comp._owner = owner;
-
-      // comp.initialize(function(err) {
-      //   if (err) {
-      //     console.error(err);
-      //   } else {
-      //     // console.log('comp has been initialized', comp);
-      //   }
-      // });
     }
 
     return comp;
@@ -189,11 +232,7 @@ Application.Prototype = function() {
       return comp.el;
     }
 
-    // if (comp.isInitialized()) {
     element = comp.render();
-    // } else {
-    //   element = comp.renderUninitialized();
-    // }
 
     var domEl = this.renderElement(element, owner);
     comp._dirty = false; // we are no longer dirty after the render
@@ -242,6 +281,11 @@ Application.Prototype = function() {
   //
 
   this.start = function() {
+    // Start listening to routes
+
+    if (this.router) this.router.start();
+    
+    console.log('starting the rendering');    
     // wrap root component in an element to fulfill rendering API
     // var rootElement = $$(this.rootComponent, {ref: "root"});
     var domEl = this.renderElement(this.rootElement);
@@ -249,7 +293,6 @@ Application.Prototype = function() {
     this.el.innerHTML = "";
     this.el.appendChild(domEl);
   };
-
 };
 
 Application.prototype = new Application.Prototype();

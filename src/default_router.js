@@ -15,7 +15,8 @@ var DefaultRouter = function(app) {
     }
   }, this);
 
-  this.route(/^state=.*$/, "state", _.bind(this.openState, this));
+  // this.route(/^state=.*$/, "state", _.bind(this.openState, this));
+  this.route(/^.*$/, "state", _.bind(this.openState, this));
 };
 
 DefaultRouter.Prototype = function() {
@@ -31,9 +32,9 @@ DefaultRouter.Prototype = function() {
 
   this.openState = function() {
     var fragment = Router.history.getFragment();
-    var state = this.app.stateFromFragment(fragment);
-    console.log('state change triggerd by router', JSON.stringify(state));
-    this.app.switchState(state, DEFAULT_OPTIONS);
+    var route = this.app.routeFromFragment(fragment);
+    console.log('state change triggerd by router', JSON.stringify(route));
+    this.app.setRoute(route);
   };
 
   this.navigate = function(route, options) {
