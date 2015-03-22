@@ -8,11 +8,16 @@ var DefaultRouter = require("./default_router");
 // Substance.Application
 // ==========================================================================
 //
-// Application abstraction suggesting strict MVC
+// Application abstraction following a React-like component structure
 
 // TODOS:
 //
-// Assign state from url fragment, and serialize
+// - Add hooks like componentWillMount, componentWillUnmount, componentDidUnmount
+//   this is needed for cleaning up things
+// - Implenet ref concept, so local elements can be referenced in event handlers etc (this.refs.searchEl)
+// - remove componentregistry: we should not have any intelligence on app level
+//   we will have a simple starting mechanism like the one in react
+//   - Application.render(MyComp, {prop1: "foo"}, document.body, optionalRouter)
 
 var Application = function(options) {
   this.config = options.config;
@@ -55,7 +60,7 @@ Application.Prototype = function() {
       this.route[comp.id] = comp.stateToRoute();
       // TODO: check if valid route has been returned
       // needs to be a hash with only string keys and values
-      console.log('new route', JSON.stringify(this.route));
+      // console.log('new route', JSON.stringify(this.route));
       this.updateRoute();
     }
   };
@@ -186,9 +191,6 @@ Application.Prototype = function() {
 
       // Set initial state (on construction)
       var routeState = this.getComponentStateFromRoute(comp);
-      if (routeState) {
-        console.log('APPLYING ROUTE STATE :-)', routeState);
-      }
       comp.state = routeState || comp.getInitialState();
 
       // map to browser url if component handles route mapping
