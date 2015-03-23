@@ -2,22 +2,12 @@
 
 var _ = require("underscore");
 var Element = require("./element");
-
 var DefaultRouter = require("./default_router");
 
 // Substance.Application
 // ==========================================================================
 //
 // Application abstraction following a React-like component structure
-
-// TODOS:
-//
-// - Add hooks like componentWillMount, componentWillUnmount, componentDidUnmount
-//   this is needed for cleaning up things
-// - Implenet ref concept, so local elements can be referenced in event handlers etc (this.refs.searchEl)
-// - remove componentregistry: we should not have any intelligence on app level
-//   we will have a simple starting mechanism like the one in react
-//   - Application.render(MyComp, {prop1: "foo"}, document.body, optionalRouter)
 
 var Application = function(options) {
   this.config = options.config;
@@ -39,10 +29,15 @@ Application.Prototype = function() {
   this.clearComponent = function(comp) {
     _.each(comp.childComponents, function(comp) {
       this.clearComponent(comp);
-      
+        
       // Remove from comp registry
       if (!comp.persistent) {
-        // console.log('unregistering', comp.id);
+        // Remove all event handlers that stick on comp.el
+        $(comp.el).off();
+        // Gives component the chance to unregister events etc.
+        if (comp.componentWillUnmount) {
+          comp.componentWillUnmount();
+        }
         delete this.components[comp.id];  
       }
     }, this);
@@ -93,10 +88,12 @@ Application.Prototype = function() {
   // Component state has changed
   // Re-render component (=subtree)
   this.updateComponent = function(comp) {
+
     var el = comp.render();
 
-    // Remove all child views of subcomponent
-    // this.clearComponent(comp);
+    // Remove all non-persistent child views of subcomponent
+    this.clearComponent(comp);
+
 
     // Re-render
     var domEl = this.renderElement(el, comp);
@@ -105,8 +102,40 @@ Application.Prototype = function() {
     if (comp.el) {
       comp.el.parentNode.replaceChild(domEl, comp.el);
     }
-    // Reassign comp.el
-    comp.mount(this, domEl);
+
+    // Update the DOM element of a component
+
+    // Unbind existing event handlers on el
+    $(comp.el).off();
+
+    comp.el = domEl;
+
+    this.bindEvents(comp);
+
+    comp.el.setAttribute("data-comp-id", comp.getId());
+
+    // TODO: bind events based on declarative spec
+
+    if (comp.componentDidUpdate) {
+      comp.componentDidUpdate();
+    }
+    if (comp.componentDidRender) {
+      comp.componentDidRender();
+    }
+  };
+
+  // After a component has been rendered (it's el has changed) we attach event handlers
+  this.bindEvents = function(comp) {
+    if (comp.events) {
+      _.each(comp.events, function(method, def) {
+        var frags = def.split(" ");
+        var eventName = frags.shift();
+        var selector = frags.join(" ");
+
+        // TODO: unregister old events first
+        $(comp.el).on(eventName, selector, _.bind(comp[method], comp));
+      });
+    }
   };
 
   this.renderDOMElement = function(tagName, attrs) {
@@ -181,11 +210,15 @@ Application.Prototype = function() {
       // comp.props = props;
       comp.setProps(props);
 
-      console.log('reusing existing component', comp.id);
+      // console.log('reusing existing component', comp.id);
+
       // console.log('create component of', owner.id);
     } else {
 
       comp = new ComponentClass();
+      if (ComponentClass.persistent) {
+        comp.persistent = true;
+      }
       // Set props
       comp.setProps(props);
 
@@ -230,9 +263,12 @@ Application.Prototype = function() {
 
     // If component data is not dirty, we just reuse the existing domNode
     if (!comp._dirty) {
-      console.log('not dirty, skip render', comp.id);
+      // console.log('not dirty, skip render', comp.id);
       return comp.el;
     }
+
+    // Clear refs before re-render
+    comp.refs = {};
 
     element = comp.render();
 
@@ -240,6 +276,11 @@ Application.Prototype = function() {
     comp._dirty = false; // we are no longer dirty after the render
     this.mountComponent(comp, domEl);
     return domEl;
+  };
+
+  // Register a reference to a DOM element on component
+  this.registerRef = function(owner, ref, el) {
+    owner.refs[ref] = el;
   };
 
   // Render Element specification
@@ -258,10 +299,16 @@ Application.Prototype = function() {
 
     if (_.isString(el.type)) {
       domEl = this.renderDOMElement(el.type, el.props);
+      if (el.props.ref) {
+        this.registerRef(owner, el.props.ref, domEl);
+      }
     } else {
       comp = this.createComponent(el.type, el.props, owner);
+      if (owner && el.props.ref) {
+        this.registerRef(owner, el.props.ref, comp);
+      }
       owner = comp;
-      domEl = this.renderComponent(comp, owner);        
+      domEl = this.renderComponent(comp, owner); 
     }
 
     // Process children
@@ -287,7 +334,6 @@ Application.Prototype = function() {
 
     if (this.router) this.router.start();
     
-    console.log('starting the rendering');    
     // wrap root component in an element to fulfill rendering API
     // var rootElement = $$(this.rootComponent, {ref: "root"});
     var domEl = this.renderElement(this.rootElement);
@@ -295,6 +341,16 @@ Application.Prototype = function() {
     this.el.innerHTML = "";
     this.el.appendChild(domEl);
   };
+};
+
+// Sample appProps:
+// {
+//   container: document.body,
+//   router: true
+// }
+
+Application.render = function(CompClass, props, appProps) {
+  // returns a running app instance
 };
 
 Application.prototype = new Application.Prototype();

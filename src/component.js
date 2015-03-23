@@ -15,15 +15,14 @@ var Component = function() {
   // Default is the empty state
   this.state = {};
 
+  // Holds references to local elements / components
+  this.refs = {};
+
   // Remember childcomponents (managed by this instance)
   this.childComponents = [];
 };
 
 Component.Prototype = function() {
-
-  // this.isInitialized = function() {
-  //   return this.state.id !== "uninitialized";
-  // };
 
   this.getId = function() {
     return this._mountPath.join(".");
@@ -32,11 +31,7 @@ Component.Prototype = function() {
   this.setProps = function(props) {
     // Either use the provided element or make up a new element
     // this.props = props || {};
-    this.id = props.id || props.ref || util.uuid();
-
-    // Should exist in addition to id, so components or dom elements can be referenced more easily
-    // e.g. in event handlers you can use `this.refs.inputForm`.
-    this.ref = props.ref || util.uuid();
+    this.id = props.id || util.uuid();
 
     // Check if there's a dirty checker
     if (this.props && this.shouldComponentUpdate) {
@@ -58,33 +53,11 @@ Component.Prototype = function() {
     return {};
   };
 
-  // Component gets initialized
-  // important for async case
-  // to transition from uninitialized state to initial state
-  // this.initialize = function(cb) {
-  //   // console.log('initialize called');
-  //   var that = this;
-
-  //   // Delay makes sure this doesn't interfer with initial rendering!
-  //   _.delay(function() {
-  //     if (that.getInitialState) {
-  //       // Set initial state, which is an async operation, component gets re-rendered
-  //       // after everything is there
-  //       that.setState(that.getInitialState(), {updateRoute: false, replace: false}, cb);
-  //     } else {
-  //       // we don't need a real transition here since we are stateless
-  //       // that.state.id = "initialized";
-  //       // cb(null);
-  //       that.setState({id: "initialized"}, {updateRoute: false, replace: false}, cb);
-  //     }
-  //   }, 500);
-  // };
-
   // Rendering
   // ------------
 
   // Mount component to DOM element
-  // This is done each time after render by Application instance
+  // This is done each time after the initial render
   this.mount = function(app, domEl) {
     this.app = app;
     this.el = domEl;
@@ -96,10 +69,30 @@ Component.Prototype = function() {
     // in the life cycle
     // Maybe we need a declarative approach for dom events and use event delegation
     // on the app level
+
+    this.app.bindEvents(this);
+
     if (this.componentDidMount) {
       this.componentDidMount();
     }
+    if (this.componentDidRender) {
+      this.componentDidRender();
+    }
   };
+
+  // Update component element
+  // This is called after a re-render, which is when the component already exists
+  // this._update = function(app, domEl) {
+  //   console.log('updating the comp');
+  //   this.app = app;
+  //   this.el = domEl;
+    
+  //   this.el.setAttribute("data-comp-id", this.getId());
+
+  //   if (this.componentDidUpdate) {
+  //     this.componentDidMount();
+  //   }
+  // };
 
   // State transition
   // ----
@@ -127,10 +120,22 @@ Component.Prototype = function() {
 
 
   this.afterTransition = function(prevState) {
-    // Triggers a re-render (but this is done on app level)
-    this.app.updateComponent(this);
-  };
+    if (this.shouldComponentUpdate) {
+      this._dirty = this.shouldComponentUpdate(this.props, this.state);
+      // console.log('dirty', this.id, this._dirty);
+    } else {
+      this._dirty = true;
+    }
 
+    if (this._dirty) {
+      if (this.componentWillUpdate) {
+        this.componentWillUpdate(this.props, this.state);
+      }
+      // Triggers a re-render (but this is done on app level)
+      this.app.updateComponent(this);      
+    }
+
+  };
 
   // User sets a new component state
   // ----------
@@ -145,11 +150,12 @@ Component.Prototype = function() {
       options = {};
     }
 
+    // update route etc. is no longer needed
     options = options || {updateRoute: true, replace: false};
 
     cb = cb || function(err) {
       if (err) {
-        console.error("Error during switch state", state, options);
+        console.error("Error during setState", state, options);
         util.printStackTrace(err);
         throw new Error(err);
       }
@@ -162,7 +168,6 @@ Component.Prototype = function() {
       cb(null);
     });
   };
-
 
   this.__setState__ = function(state, options, cb) {
     var self = this;
@@ -228,16 +233,13 @@ Component.Prototype = function() {
   //  )
   // };
 
-  // this.renderUninitialized = function() {
-  //   return $$('div', {className: 'loading'});
-  // };
-
   this.render = function() {
     throw new Error("render method must be defined!");
   };
 
   // Explicit rerender requested by the app
   this.rerender = function () {
+    console.log('TODO: Component.rerender is legacy API! Use Component.setState to trigger a rerender');
     this._dirty = true;
     this.app.updateComponent(this);
   };
