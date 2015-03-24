@@ -36,7 +36,6 @@ Component.Prototype = function() {
     // Check if there's a dirty checker
     if (this.props && this.shouldComponentUpdate) {
       this._dirty = this.shouldComponentUpdate(props, this.state);
-      // console.log('dirty', this.id, this._dirty);
     } else {
       this._dirty = true;
     }
@@ -80,20 +79,6 @@ Component.Prototype = function() {
     }
   };
 
-  // Update component element
-  // This is called after a re-render, which is when the component already exists
-  // this._update = function(app, domEl) {
-  //   console.log('updating the comp');
-  //   this.app = app;
-  //   this.el = domEl;
-    
-  //   this.el.setAttribute("data-comp-id", this.getId());
-
-  //   if (this.componentDidUpdate) {
-  //     this.componentDidMount();
-  //   }
-  // };
-
   // State transition
   // ----
   // 
@@ -118,14 +103,18 @@ Component.Prototype = function() {
     cb(null);
   };
 
-
+  // Only relevant for state transitions
   this.afterTransition = function(prevState) {
-    if (this.shouldComponentUpdate) {
-      this._dirty = this.shouldComponentUpdate(this.props, this.state);
-      // console.log('dirty', this.id, this._dirty);
-    } else {
-      this._dirty = true;
-    }
+    // TODO we need to make sure this is called when prevState is still there
+    // move this check somewhere before this.state is assigned with nextState;
+
+    // if (this.shouldComponentUpdate) {
+    //   this._dirty = this.shouldComponentUpdate(this.props, this.state);
+    //   // console.log('dirty', this.id, this._dirty);
+    // } else {
+    //   this._dirty = true;
+    // }
+    this._dirty = true;
 
     if (this._dirty) {
       if (this.componentWillUpdate) {
@@ -134,7 +123,6 @@ Component.Prototype = function() {
       // Triggers a re-render (but this is done on app level)
       this.app.updateComponent(this);      
     }
-
   };
 
   // User sets a new component state
