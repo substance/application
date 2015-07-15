@@ -1,4 +1,4 @@
-application
-===========
+Substance Application
+=====
 
-Build Substance apps using Views, Controllers and Modules (CommonJS)
+**No longer maintained. Use http://github.com/substance/substance instead.**
