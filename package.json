@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "underscore": "*",
-    "substance-regexp": "git+https://github.com/substance/regexp.git#master"
+    "substance-regexp": "substance/regexp.git#370bbedad9a069bce6efd1e8e8807020ee0de151"
   },
   "version": "0.2.0",
   "engines": {
